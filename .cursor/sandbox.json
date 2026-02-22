@@ -1,0 +1,24 @@
+{
+    "networkPolicy": {
+      "default": "deny",
+      "allow": [
+        "registry.npmjs.org",
+        "registry.yarnpkg.com",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "*.docker.io",
+        "ghcr.io",
+        "*.googleapis.com"
+      ],
+      "deny": [
+        "*.internal.corp.example.com"
+      ]
+    },
+    "additionalReadwritePaths": [
+      "/home/me/.docker"
+    ],
+    "additionalReadonlyPaths": [
+      "/opt/shared/design-tokens"
+    ],
+    "enableSharedBuildCache": true
+  }

@@ -1,0 +1,6 @@
+---
+title: Updates and FAQ refreshed
+date: 2026-02-21
+image: /images/logo.svg
+---
+We refreshed this section with clearer answers and cleaner release notes so it is easier to follow what is new.
