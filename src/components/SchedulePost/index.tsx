@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DatePicker from "react-datepicker";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import "react-datepicker/dist/react-datepicker.css";
 
 type SchedulePostProps = {};
@@ -39,7 +39,7 @@ const SchedulePost = ({}: SchedulePostProps) => {
                                 dayClassName={dayClassName}
                             />
                             <Icon
-                                className="absolute top-3 left-3 fill-n-6 pointer-events-none dark:fill-n-3"
+                                className="absolute top-3 left-3 stroke-n-6 pointer-events-none dark:stroke-n-3"
                                 name="calendar"
                             />
                         </div>
@@ -57,7 +57,7 @@ const SchedulePost = ({}: SchedulePostProps) => {
                                 dateFormat="h:mm aa"
                             />
                             <Icon
-                                className="absolute top-3 left-3 fill-n-6 pointer-events-none dark:fill-n-3"
+                                className="absolute top-3 left-3 stroke-n-6 pointer-events-none dark:stroke-n-3"
                                 name="time"
                             />
                         </div>
@@ -65,7 +65,7 @@ const SchedulePost = ({}: SchedulePostProps) => {
                 </div>
                 <div className="flex items-center mb-4 text-n-4/50 caption1 font-semibold dark:text-n-4">
                     <Icon
-                        className="w-4 h-4 mr-3 fill-n-4/50 dark:text-n-4"
+                        className="size-4 mr-3 stroke-n-4/50 dark:stroke-n-4"
                         name="info-circle"
                     />
                     Scheduled in your current timezone

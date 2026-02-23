@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Application from "./Application";
 
 import { applications } from "@/mocks/applications";
@@ -17,7 +17,7 @@ const ApplicationsPage = () => {
                     className="hidden absolute top-6 right-6 w-10 h-10 border-2 border-n-4/25 rounded-full text-0 transition-colors hover:border-transparent hover:bg-n-4/25 md:block"
                     onClick={() => navigate(-1)}
                 >
-                    <Icon className="fill-n-4" name="close" />
+                    <Icon className="stroke-n-4" name="close" />
                 </button>
                 <div className="h3 leading-[4rem] md:mb-3 md:h3">
                     Applications
@@ -36,7 +36,7 @@ const ApplicationsPage = () => {
                             type="submit"
                         >
                             <Icon
-                                className="fill-n-4 transition-colors group-hover:fill-n-7"
+                                className="stroke-n-4 transition-colors group-hover:stroke-n-7"
                                 name="search"
                             />
                         </button>

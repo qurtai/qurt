@@ -23,7 +23,7 @@ Primary risks:
 - renderer access to privileged actions goes through preload IPC bridge
 - attachments are stored with sanitized file names
 - attachment operations are mediated in main process
-- agent mode includes web search and a restricted terminal tool (see below)
+- agent mode includes web search, a restricted terminal tool (see below), and a file patch tool (see below)
 - terminal tool: filesystem restricted to a configurable workspace directory; command denylist (e.g. rm -rf, sudo); network default-deny; timeout and output caps enforced in main process
 - composer mode defaults to `Ask` for each new message, reducing accidental tool use
 
@@ -42,7 +42,16 @@ Primary risks:
 - **Network**: Default deny; requests with `network: { enabled: true }` are rejected in current version (domain allowlist not yet enforced).
 - **Output and time**: Hard caps on `timeout_ms` and `max_output_bytes` enforced in main process.
 - **Approval**: Per-run approval for boundary violations (new domain, write outside workspace, etc.) is planned; currently such runs are denied.
-- **IPC**: Only `run-terminal` and `get-terminal-workspace-root` channels; request shape validated before execution.
+- **IPC**: `run-terminal`, `get-terminal-workspace-root`, `apply-file-patch`, `restore-file-patch-checkpoint`, `restore-file-patch-checkpoints`; request shape validated before execution.
+
+## File Patch Tool Security
+
+- **Workspace restriction**: All paths resolved relative to workspace root; `realpath` used to resolve symlinks; paths escaping workspace are rejected.
+- **Binary blocking**: Binary file types (e.g. images, archives, executables) blocked by extension; content heuristics (null bytes, non-text ratio) reject ambiguous files.
+- **base_hashes**: Optional SHA-256 validation before apply; mismatch rejects that file with explicit reason.
+- **Per-file atomicity**: Each file patch is all-or-nothing; failures do not leave partial writes.
+- **Checkpoint revert**: Pre-patch state stored before writes; restore via `restore-file-patch-checkpoint` (single) or `restore-file-patch-checkpoints` (batch) IPC; restore deletes messages and reverts all file changes after that user message.
+- **Approval**: `needsApproval: true`; user must approve each patch run.
 
 ## Future Security Work (Roadmap-Critical)
 

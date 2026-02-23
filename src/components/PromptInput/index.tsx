@@ -6,9 +6,16 @@ import {
   useMemo,
 } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
+import { Button } from "@/components/ui/button";
 import ModelSelector from "@/components/ModelSelector";
-import Select from "@/components/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import AddFile from "./AddFile";
 import type { ChatAttachment } from "@/types/chat-attachment";
 import type { PromptMode } from "@/types/prompt-mode";
@@ -35,6 +42,9 @@ type PromptInputProps = {
   terminalWorkspacePath?: string;
   onSelectWorkspaceFolder?: () => void;
   centered?: boolean;
+  /** When true, show stop button instead of submit; requires onStop. */
+  isLoading?: boolean;
+  onStop?: () => void;
 };
 
 const PromptInput = ({
@@ -50,6 +60,8 @@ const PromptInput = ({
   terminalWorkspacePath,
   onSelectWorkspaceFolder,
   centered,
+  isLoading,
+  onStop,
 }: PromptInputProps) => {
   const modeItems: { id: PromptMode; title: string }[] = useMemo(
     () => [
@@ -58,8 +70,6 @@ const PromptInput = ({
     ],
     [],
   );
-  const selectedMode =
-    modeItems.find((m) => m.id === mode) ?? modeItems[0];
   const hasAttachments = (attachments?.length ?? 0) > 0;
   const attachmentItems = useMemo<AttachmentData[]>(
     () =>
@@ -132,44 +142,64 @@ const PromptInput = ({
               onPaste={handlePaste}
               placeholder={placeholder || "Ask Alem anything"}
             />
-            {(value !== "" || hasAttachments) && (
-              <button
-                className="group absolute right-3 bottom-2 w-10 h-10 bg-primary-1 rounded-xl transition-colors hover:bg-primary-1/90"
-                type="submit"
-              >
-                <Icon className="fill-n-1" name="arrow-up" />
-              </button>
+            {(value !== "" || hasAttachments || isLoading) && (
+              isLoading && onStop ? (
+                <button
+                  className="group absolute right-3 bottom-2 w-10 h-10 bg-primary-1 rounded-xl transition-colors hover:bg-primary-1/90"
+                  type="button"
+                  onClick={onStop}
+                  title="Stop"
+                >
+                  <Icon className="stroke-n-1" name="stop" />
+                </button>
+              ) : (
+                <button
+                  className="group absolute right-3 bottom-2 w-10 h-10 bg-primary-1 rounded-xl transition-colors hover:bg-primary-1/90"
+                  type="submit"
+                >
+                  <Icon className="stroke-n-1" name="arrow-up" />
+                </button>
+              )
             )}
           </div>
           <div className="relative flex flex-wrap items-center gap-2 px-3 pb-2.5">
             <AddFile onSelectFiles={onAddFiles} />
             <Select
-              items={modeItems}
-              value={selectedMode}
-              onChange={(item: { id: PromptMode }) => onModeChange?.(item.id)}
-              small
-              up
-              noShadow
-              classButton="caption2 border-0"
-              classOptions="border-0"
-              classOption="caption2"
-            />
+              value={mode}
+              onValueChange={(value) => onModeChange?.(value as PromptMode)}
+            >
+              <SelectTrigger className="h-9 w-[5rem] px-2 rounded-md border-0 bg-n-1 dark:bg-n-6 shadow-none transition-colors hover:bg-accent hover:text-n-7 dark:hover:bg-accent dark:text-n-4 dark:hover:text-n-1">
+                <SelectValue placeholder="Mode" />
+              </SelectTrigger>
+              <SelectContent side="top">
+                {modeItems.map((item) => (
+                  <SelectItem key={item.id} value={item.id}>
+                    {item.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <ModelSelector direction="up" compact />
             {mode === "agent" && onSelectWorkspaceFolder && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={onSelectWorkspaceFolder}
-                className="caption2 text-n-5 hover:text-n-7 dark:text-n-4 dark:hover:text-n-1 truncate max-w-[12rem] rounded-md px-2 py-1 border border-n-3 dark:border-n-5 hover:border-n-4 dark:hover:border-n-4 transition-colors"
+                className="h-9 py-1 px-2 hover:text-n-7 dark:text-n-4 dark:hover:text-n-1 truncate max-w-[12rem]"
                 title={terminalWorkspacePath || "Select workspace folder for terminal"}
               >
                 {terminalWorkspacePath ? (
-                  <span className="truncate block" title={terminalWorkspacePath}>
-                    📁 {terminalWorkspacePath.split(/[/\\]/).pop() || terminalWorkspacePath}
+                  <span className="truncate flex items-center gap-1.5" title={terminalWorkspacePath}>
+                    <Icon className="size-4 shrink-0" name="folder" />
+                    {terminalWorkspacePath.split(/[/\\]/).pop() || terminalWorkspacePath}
                   </span>
                 ) : (
-                  "📁 Select workspace"
+                  <>
+                    <Icon className="size-4 shrink-0" name="folder" />
+                    Select workspace
+                  </>
                 )}
-              </button>
+              </Button>
             )}
           </div>
         </div>

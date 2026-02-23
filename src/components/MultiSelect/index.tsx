@@ -1,6 +1,6 @@
 import Select, { components } from "react-select";
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 const { Option, MultiValueRemove } = components;
 
@@ -28,7 +28,7 @@ const DetailsOption = (props: any) => (
 const CustomMultiValueRemove = (props: any) => (
     <MultiValueRemove {...props}>
         <Icon
-            className="w-4 h-4 fill-inherit transition-transform"
+            className="size-4 stroke-current transition-transform"
             name="close"
         />
     </MultiValueRemove>
@@ -93,7 +93,7 @@ const MultiSelect = ({
                 isClearable={false}
             />
             <Icon
-                className={`absolute top-4 left-5 w-5 h-5 pointer-events-none fill-n-4/50 dark:fill-n-4/75 ${
+                className={`absolute top-4 left-5 size-5 pointer-events-none stroke-n-4/50 dark:stroke-n-4/75 ${
                     selectedOptions.length !== 0 && "hidden"
                 }`}
                 name="email"

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Select from "@/components/Select";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import View from "./View";
 
 const languages = [

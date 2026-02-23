@@ -1,7 +1,7 @@
 "use client";
 
-import { ToolOutput } from "@/components/ai-elements/tool";
 import { cn } from "@/lib/utils";
+import { TruncatedOutput } from "@/utils/truncated-output";
 import type { ToolDisplayProps } from "../types";
 import type { TerminalRunResult, TerminalOutcome } from "./types";
 
@@ -16,20 +16,20 @@ function OutcomeBadge({ outcome }: { outcome: TerminalOutcome }) {
             : "bg-amber-500/20 text-amber-700 dark:text-amber-400"
         )}
       >
-        exit {outcome.exit_code}
+        {outcome.exit_code === 0 ? "Done" : "Exit " + outcome.exit_code}
       </span>
     );
   }
   if (outcome.type === "timeout") {
     return (
       <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-        timeout
+        Timeout
       </span>
     );
   }
   return (
     <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-      denied
+      Denied
     </span>
   );
 }
@@ -93,16 +93,15 @@ export function TerminalToolDisplay({
       <div className="space-y-2 rounded-md border bg-muted/30 p-2 font-mono text-xs">
         {stdout && (
           <div>
-            <div className="mb-0.5 font-medium text-muted-foreground">stdout</div>
-            <pre className="whitespace-pre-wrap break-words">{stdout}</pre>
+            <TruncatedOutput text={stdout} />
           </div>
         )}
         {stderr && (
           <div>
-            <div className="mb-0.5 font-medium text-muted-foreground">stderr</div>
-            <pre className="whitespace-pre-wrap break-words text-amber-700 dark:text-amber-400">
-              {stderr}
-            </pre>
+            <TruncatedOutput
+              text={stderr}
+              className="text-amber-700 dark:text-amber-400"
+            />
           </div>
         )}
         {failurePreview && (

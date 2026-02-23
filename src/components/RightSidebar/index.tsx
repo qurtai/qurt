@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 import { toast } from "react-hot-toast";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Notify from "@/components/Notify";
 import ChatItem from "./ChatItem";
 import ChatEmpty from "./ChatEmpty";
@@ -12,7 +12,7 @@ import {
     chatService,
     type ChatHistoryListItem,
 } from "@/services/chat-service";
-import { ARCHIVED_CHAT_LIST_ID } from "@/services/chat-list-service";
+import { ARCHIVED_CHAT_GROUP_ID } from "@/services/chat-group-service";
 
 type RightSidebarProps = {
     className?: string;
@@ -31,7 +31,7 @@ const RightSidebar = ({ className, visible }: RightSidebarProps) => {
     const loadChats = useCallback(async () => {
         setIsLoading(true);
         const items = await chatService.listChats({
-            listId: activeListId || undefined,
+            groupId: activeListId || undefined,
         });
         setChatItems(items);
         setIsLoading(false);
@@ -101,7 +101,7 @@ const RightSidebar = ({ className, visible }: RightSidebarProps) => {
         .map((item) => item.id);
     const hasSelectedChats = selectedChats.length > 0;
     const hasArchivableSelectedChats = archivableSelectedChatIds.length > 0;
-    const isArchivedList = activeListId === ARCHIVED_CHAT_LIST_ID;
+    const isArchivedGroup = activeListId === ARCHIVED_CHAT_GROUP_ID;
 
     return (
         <div
@@ -151,7 +151,7 @@ const RightSidebar = ({ className, visible }: RightSidebarProps) => {
                         }}
                     >
                         <Icon
-                            className="w-5 h-5 fill-n-4 transition-colors group-hover:fill-primary-1"
+                            className="size-5 stroke-n-4 transition-colors group-hover:stroke-primary-1"
                             name="archive"
                         />
                         <div className="absolute min-w-[8rem] top-1/2 -translate-y-1/2 right-full mr-2 px-2 py-1 rounded-lg bg-n-7 caption1 text-n-1 invisible opacity-0 transition-opacity pointer-events-none lg:hidden after:absolute after:top-1/2 after:left-full after:-translate-y-1/2 after:w-0 after:h-0 after:border-t-4 after:border-l-4 after:border-b-4 after:border-r-4 after:border-r-transparent after:border-l-n-7 after:border-t-transparent after:border-b-transparent group-hover:opacity-100 group-hover:visible">
@@ -199,7 +199,7 @@ const RightSidebar = ({ className, visible }: RightSidebarProps) => {
                         }}
                     >
                         <Icon
-                            className="w-5 h-5 fill-n-4 transition-colors group-hover:fill-accent-1"
+                            className="size-5 stroke-n-4 transition-colors group-hover:stroke-accent-1"
                             name="trash"
                         />
                         <div className="absolute min-w-[8rem] top-1/2 -translate-y-1/2 right-full mr-2 px-2 py-1 rounded-lg bg-n-7 caption1 text-n-1 invisible opacity-0 transition-opacity pointer-events-none lg:hidden after:absolute after:top-1/2 after:left-full after:-translate-y-1/2 after:w-0 after:h-0 after:border-t-4 after:border-l-4 after:border-b-4 after:border-r-4 after:border-r-transparent after:border-l-n-7 after:border-t-transparent after:border-b-transparent group-hover:opacity-100 group-hover:visible">
@@ -223,7 +223,7 @@ const RightSidebar = ({ className, visible }: RightSidebarProps) => {
                 )}
             </div>
             <div className="absolute left-0 right-0 bottom-0 p-6">
-                {isArchivedList ? (
+                {isArchivedGroup ? (
                     <button
                         className="btn-blue w-full opacity-50 cursor-not-allowed"
                         disabled

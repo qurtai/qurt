@@ -1,32 +1,32 @@
 import { useEffect, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
 import ModalShareChat from "@/components/ModalShareChat";
 import {
-    ARCHIVED_CHAT_LIST_ID,
-    chatListService,
-} from "@/services/chat-list-service";
+    ARCHIVED_CHAT_GROUP_ID,
+    chatGroupService,
+} from "@/services/chat-group-service";
 import { chatService } from "@/services/chat-service";
 
 type ActionsProps = {
     chatId: string;
-    chatListIds: string[];
+    chatGroupIds: string[];
 };
 
-const Actions = ({ chatId, chatListIds }: ActionsProps) => {
+const Actions = ({ chatId, chatGroupIds }: ActionsProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [favorite, setFavorite] = useState<boolean>(false);
     const [visibleShareModal, setVisibleShareModal] = useState<boolean>(false);
-    const [visibleAddToListModal, setVisibleAddToListModal] =
+    const [visibleAddToGroupModal, setVisibleAddToGroupModal] =
         useState<boolean>(false);
     const [isProcessingAction, setIsProcessingAction] = useState<boolean>(false);
     const [isLoadingLists, setIsLoadingLists] = useState<boolean>(false);
-    const [isAddingListId, setIsAddingListId] = useState<string | null>(null);
+    const [isAddingGroupId, setIsAddingGroupId] = useState<string | null>(null);
     const [listError, setListError] = useState<string>("");
-    const [assignedListIds, setAssignedListIds] = useState<string[]>(chatListIds);
+    const [assignedGroupIds, setAssignedGroupIds] = useState<string[]>(chatGroupIds);
     const [lists, setLists] = useState<
         {
             id: string;
@@ -36,55 +36,55 @@ const Actions = ({ chatId, chatListIds }: ActionsProps) => {
     >([]);
 
     useEffect(() => {
-        setAssignedListIds(chatListIds);
-    }, [chatListIds]);
+        setAssignedGroupIds(chatGroupIds);
+    }, [chatGroupIds]);
 
     const loadAssignableLists = async () => {
         setIsLoadingLists(true);
         setListError("");
 
         try {
-            const allLists = await chatListService.listChatLists();
+            const allGroups = await chatGroupService.listChatGroups();
             setLists(
-                allLists
-                    .filter((list) => list.id !== ARCHIVED_CHAT_LIST_ID)
-                    .map((list) => ({
-                        id: list.id,
-                        title: list.title,
-                        color: list.color,
+                allGroups
+                    .filter((group) => group.id !== ARCHIVED_CHAT_GROUP_ID)
+                    .map((group) => ({
+                        id: group.id,
+                        title: group.title,
+                        color: group.color,
                     }))
             );
         } catch (error) {
             setListError(
                 error instanceof Error
                     ? error.message
-                    : "Failed to load lists."
+                    : "Failed to load groups."
             );
         } finally {
             setIsLoadingLists(false);
         }
     };
 
-    const handleAddToList = async (listId: string) => {
-        if (assignedListIds.includes(listId) || isAddingListId) {
+    const handleAddToGroup = async (groupId: string) => {
+        if (assignedGroupIds.includes(groupId) || isAddingGroupId) {
             return;
         }
 
-        setIsAddingListId(listId);
+        setIsAddingGroupId(groupId);
         setListError("");
         try {
-            const updatedChat = await chatService.addChatToList(chatId, listId);
+            const updatedChat = await chatService.addChatToGroup(chatId, groupId);
             if (updatedChat) {
-                setAssignedListIds(updatedChat.chatListIds);
+                setAssignedGroupIds(updatedChat.chatGroupIds);
             }
         } catch (error) {
             setListError(
                 error instanceof Error
                     ? error.message
-                    : "Failed to add chat to list."
+                    : "Failed to add chat to group."
             );
         } finally {
-            setIsAddingListId(null);
+            setIsAddingGroupId(null);
         }
     };
 
@@ -127,7 +127,7 @@ const Actions = ({ chatId, chatListIds }: ActionsProps) => {
             await chatService.deleteChats([chatId]);
 
             if (activeListId) {
-                const latestChat = await chatService.getLatestChatInList(
+                const latestChat = await chatService.getLatestChatInGroup(
                     activeListId
                 );
                 if (latestChat) {
@@ -147,16 +147,16 @@ const Actions = ({ chatId, chatListIds }: ActionsProps) => {
     const menu = [
         {
             id: "0",
-            title: "Add to favorite list",
+            title: "Add to favorite group",
             icon: "star",
             onClick: () => setFavorite(!favorite),
         },
         {
             id: "1",
-            title: "Add to list",
+            title: "Add to group",
             icon: "plus-circle",
             onClick: async () => {
-                setVisibleAddToListModal(true);
+                setVisibleAddToGroupModal(true);
                 await loadAssignableLists();
             },
         },
@@ -186,7 +186,7 @@ const Actions = ({ chatId, chatListIds }: ActionsProps) => {
                 <Menu>
                     <Menu.Button className="group relative w-8 h-8">
                         <Icon
-                            className="fill-n-4 transition-colors group-hover:fill-primary-1 ui-open:!fill-primary-1"
+                            className="stroke-n-4 transition-colors group-hover:stroke-primary-1 ui-open:!stroke-primary-1"
                             name="dots"
                         />
                     </Menu.Button>
@@ -207,10 +207,10 @@ const Actions = ({ chatId, chatListIds }: ActionsProps) => {
                                             onClick={item.onClick}
                                         >
                                             <Icon
-                                                className={`shrink-0 mr-3 fill-n-4 transition-colors group-hover:fill-n-7 dark:group-hover:fill-n-1 ${
+                                                className={`shrink-0 mr-3 stroke-n-4 transition-colors group-hover:stroke-n-7 dark:group-hover:stroke-n-1 ${
                                                     item.id === "0" &&
                                                     favorite &&
-                                                    "!fill-accent-5"
+                                                    "!stroke-accent-5"
                                                 }`}
                                                 name={
                                                     item.id === "0"
@@ -233,42 +233,42 @@ const Actions = ({ chatId, chatListIds }: ActionsProps) => {
                 className="md:!p-0"
                 classWrap="max-w-[32rem] md:min-h-screen-ios md:rounded-none"
                 classButtonClose="absolute top-6 right-6 w-10 h-10 rounded-full bg-n-2 md:right-5 dark:bg-n-4/25 dark:fill-n-4 dark:hover:fill-n-1"
-                visible={visibleAddToListModal}
-                onClose={() => setVisibleAddToListModal(false)}
+                visible={visibleAddToGroupModal}
+                onClose={() => setVisibleAddToGroupModal(false)}
             >
                 <div className="p-8 md:px-5 md:py-6">
-                    <div className="mb-6 h5">Add to list</div>
+                    <div className="mb-6 h5">Add to group</div>
                     {isLoadingLists ? (
-                        <div className="base2 text-n-4/75">Loading lists...</div>
+                        <div className="base2 text-n-4/75">Loading groups...</div>
                     ) : lists.length === 0 ? (
                         <div className="base2 text-n-4/75">
-                            No lists available.
+                            No groups available.
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            {lists.map((list) => {
-                                const isAssigned = assignedListIds.includes(
-                                    list.id
+                            {lists.map((group) => {
+                                const isAssigned = assignedGroupIds.includes(
+                                    group.id
                                 );
-                                const isSaving = isAddingListId === list.id;
+                                const isSaving = isAddingGroupId === group.id;
 
                                 return (
                                     <button
-                                        key={list.id}
+                                        key={group.id}
                                         className="flex items-center w-full rounded-xl px-3 py-3 transition-colors bg-n-2 hover:bg-n-3 dark:bg-n-6 dark:hover:bg-n-5 disabled:cursor-not-allowed disabled:opacity-70"
                                         onClick={() =>
-                                            handleAddToList(list.id)
+                                            handleAddToGroup(group.id)
                                         }
-                                        disabled={isAssigned || !!isAddingListId}
+                                        disabled={isAssigned || !!isAddingGroupId}
                                     >
                                         <div
                                             className="mr-3 h-3.5 w-3.5 rounded"
                                             style={{
-                                                backgroundColor: list.color,
+                                                backgroundColor: group.color,
                                             }}
                                         ></div>
                                         <div className="mr-auto base1 font-semibold">
-                                            {list.title}
+                                            {group.title}
                                         </div>
                                         <div className="base2 text-n-4">
                                             {isAssigned

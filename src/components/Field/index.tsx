@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type FieldProps = {
     className?: string;
@@ -82,8 +82,8 @@ const Field = ({
                         />
                     )}
                     <Icon
-                        className={`absolute top-3.5 left-4 fill-n-4/50 pointer-events-none transition-colors ${
-                            value !== "" && "fill-n-4"
+                        className={`absolute top-3.5 left-4 stroke-n-4/50 pointer-events-none transition-colors ${
+                            value !== "" && "stroke-n-4"
                         }`}
                         name={icon}
                     />

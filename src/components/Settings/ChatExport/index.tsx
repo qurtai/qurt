@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Switch from "@/components/Switch";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Select from "@/components/Select";
 
 const typesFile = [
@@ -55,7 +55,7 @@ const ChatExport = ({}: ChatExportProps) => {
             <div className="mb-8 h4">Chat export</div>
             <div className="flex items-center mb-8">
                 <div className="mr-auto base2 text-n-4">
-                    Select chat list to export
+                    Select chat group to export
                 </div>
                 <Switch
                     value={exportChat}
@@ -85,7 +85,7 @@ const ChatExport = ({}: ChatExportProps) => {
                         </div>
                         {checkbox.title}
                         <Icon
-                            className={`ml-auto fill-primary-1 opacity-0 transition-opacity ${
+                            className={`ml-auto stroke-primary-1 opacity-0 transition-opacity ${
                                 checkbox.isChecked && "opacity-100"
                             }`}
                             name="check-thin"
@@ -100,7 +100,7 @@ const ChatExport = ({}: ChatExportProps) => {
                 <div className=" self-center w-0.25 h-8 bg-n-1/20"></div>
                 <Select
                     classButton="h-12 rounded-l-none rounded-r-xl shadow-[inset_0_0_0_0.0625rem_#0084FF] bg-transparent text-n-1 font-semibold dark:bg-transparent"
-                    classArrow="fill-n-1"
+                    classArrow="stroke-n-1"
                     classOptions="min-w-full"
                     items={typesFile}
                     value={typeFile}

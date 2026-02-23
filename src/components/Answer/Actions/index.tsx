@@ -1,6 +1,6 @@
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { toast } from "react-hot-toast";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Notify from "@/components/Notify";
 
 type ActionsProps = {};
@@ -33,10 +33,10 @@ const Actions = ({}: ActionsProps) => {
                     title="Copy"
                     aria-label="Copy response"
                 >
-                    <Icon
-                        className="w-4 h-4 fill-n-4 transition-colors group-hover:fill-primary-1 dark:fill-n-3"
-                        name="copy"
-                    />
+<Icon
+                    className="size-4 stroke-n-4 transition-colors group-hover:stroke-primary-1 dark:stroke-n-3"
+                    name="copy"
+                />
                 </button>
             </CopyToClipboard>
 
@@ -46,7 +46,7 @@ const Actions = ({}: ActionsProps) => {
                 aria-label="Regenerate response"
             >
                 <Icon
-                    className="w-4 h-4 fill-n-4 transition-colors group-hover:fill-primary-1 dark:fill-n-3"
+                    className="size-4 stroke-n-4 transition-colors group-hover:stroke-primary-1 dark:stroke-n-3"
                     name="refresh"
                 />
             </button>
@@ -58,7 +58,7 @@ const Actions = ({}: ActionsProps) => {
                 aria-label="Branch chat"
             >
                 <Icon
-                    className="w-4 h-4 fill-n-4 transition-colors group-hover:fill-primary-1 dark:fill-n-3"
+                    className="size-4 stroke-n-4 transition-colors group-hover:stroke-primary-1 dark:stroke-n-3"
                     name="external-link"
                 />
             </button>

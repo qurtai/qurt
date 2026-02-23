@@ -1,5 +1,5 @@
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Select from "@/components/Select";
 import { useState } from "react";
 
@@ -42,7 +42,7 @@ const User = ({ item }: UserProps) => {
                 <div className="flex items-center caption1 font-semibold text-n-4">
                     {item.status}{" "}
                     <Icon
-                        className="w-5 h-5 ml-1.5 fill-n-4"
+                        className="size-5 ml-1.5 stroke-n-4"
                         name="check-thin"
                     />
                 </div>

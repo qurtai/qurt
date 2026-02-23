@@ -15,8 +15,8 @@ System architecture for `alem`.
 
 1. **Electron main process**
    - window lifecycle
-- IPC handlers for settings, API keys, attachments, and terminal runs
-  - files: `electron/main.ts`, `electron/store.ts`, `electron/file-store.ts`, `electron/terminal-runner.ts`
+   - IPC handlers for settings, API keys, attachments, terminal runs, and file patch apply/restore
+   - files: `electron/main.ts`, `electron/store.ts`, `electron/file-store.ts`, `electron/terminal-runner.ts`, `electron/file-patch-runner.ts`, `electron/file-patch-checkpoints.ts`
 2. **Electron preload bridge**
    - safe renderer API exposed via `window.alem`
    - file: `electron/preload.ts`
@@ -24,17 +24,20 @@ System architecture for `alem`.
    - routes, UI, chat workflows, settings
    - left sidebar owns shared quick actions (search, updates, notifications, settings) across home/chat
    - updates/FAQ and notifications are available as sidebar-launched modals while the updates route remains for direct navigation
+   - checkpoint restore state and orchestration: `src/stores/checkpoint-store.ts`, `src/services/checkpoint-service.ts`
+   - ChatPage: `useChatPageController` owns chat load, message sync, initial prompt, and restore handlers; `ChatMessages` composes user/assistant message renderers; tool step rendering in `ToolStepItem`
    - files: `src/main.tsx`, `src/App.tsx`, `src/pages/**`, `src/components/**`
 
 ## Directory Map
 
 - `src/components/`: reusable app components
 - `src/pages/`: app-owned, routed pages (`HomePage`, `ChatPage`, `UpdatesAndFaqPage`)
+  - `ChatPage/`: feature folder with `index.tsx` (composition), `hooks/useChatPageController.tsx` (session lifecycle, restore), `components/` (ChatMessages, UserMessageItem, AssistantMessageItem, ToolStepItem), `utils/` (messageParts, downloadableMessages)
 - `templates/`: prebuilt template pages/layouts; do not edit unless explicitly requested
-- `src/services/`: integration logic (`ai-service`, `chat-service`, `updates-faq-service`, search helpers)
+- `src/services/`: integration logic (`ai-service`, `alem-chat-transport`, `chat-service`, `checkpoint-service`, `updates-faq-service`, search helpers)
 - `src/tools/`: agent tools; each tool is a folder with type (description), action (provider proxy), and display (Chain of Thought UI)
-- `src/hooks/`: chat orchestration (`useAlemChat`)
-- `src/stores/`: client-side and content abstractions (`chat-store`, `updates-faq-store`)
+- `src/hooks/`: chat orchestration (`useAlemChat`), checkpoint state (`useCheckpointStore`)
+- `src/stores/`: client-side and content abstractions (`chat-store`, `checkpoint-store`, `updates-faq-store`)
 - `electron/`: desktop process code and secure bridge
 - `docs/faq/`, `docs/updates/`: markdown-driven content source for the Updates & FAQ UI
 
@@ -47,15 +50,15 @@ System architecture for `alem`.
   - saved under app user data folder (`chat-attachments`)
   - metadata tracked in store `attachments` map
 - **Chat history**
-  - stored in browser `localStorage` under `alem.chat-history.v1`
-  - normalized and validated by `BrowserChatStore`
-  - assistant messages can include optional reasoning text for collapsible display
-  - sessions now include `chatListIds` plus `isArchived` for list grouping and archive semantics
-- **Chat lists**
-  - stored in browser `localStorage` under `alem.chat-lists.v1`
-  - normalized and validated by `BrowserChatListStore`
-  - default lists are `Favorites` and `Archived`
-  - active list selection is carried in route query (`?list=<listId>`) to keep left/right sidebars in sync
+  - stored in browser `localStorage` under `alem.chat-history.v2`
+  - messages in AI SDK format (`UIMessage[]` with `parts`)
+  - validated by `BrowserChatStore` via `isValidUIMessage`
+  - sessions include `chatGroupIds` plus `isArchived` for group grouping and archive semantics
+- **Chat groups**
+  - stored in browser `localStorage` under `alem.chat-lists.v1` (key kept for backward compatibility)
+  - normalized and validated by `BrowserChatGroupStore`
+  - default groups are `Favorites` and `Archived`
+  - active group selection is carried in route query (`?list=<groupId>`) to keep left/right sidebars in sync
 
 ## AI Provider Flow
 
@@ -64,21 +67,21 @@ System architecture for `alem`.
   (`model-selector`, `attachments`, `message`, `conversation`) to keep chat UI
   behavior consistent across home and chat routes
 - supported providers are currently OpenAI, Anthropic, Google
-- `src/services/ai-service.ts` maps provider IDs to SDK clients
-- OpenAI model entries can map a UI model option to a base model ID plus
-  provider options (for example OpenAI reasoning effort, Gemini thinking level,
-  and Claude thinking budgets)
-- attachments are converted into model file content parts before generation
+- `src/services/ai-service.ts` maps provider IDs to SDK clients and exposes
+  `createAgent()` returning `ToolLoopAgent` with provider, model, apiKey, mode (ask/agent), and optional `terminalWorkspaceOverride`
+- chat uses `@ai-sdk/react` `useChat` with `AlemChatTransport` (`src/services/alem-chat-transport.ts`)
+- `AlemChatTransport` wraps `DirectChatTransport`, resolves `alem-attachment://` file parts via `resolveAttachment`, and uses `getAgent()` so the agent is created with the current apiKey on each send
+- attachments are stored as `alem-attachment://<id>` URLs and resolved to data URLs before sending to the agent
 - chat composer supports per-message mode switching:
-  - `Ask`: single-pass text generation (`generateText`)
-  - `Agent`: AI SDK `ToolLoopAgent` with tools from `src/tools/` registry (e.g. web-search: provider proxy in `action`, display with search icon and domain-only result badges; terminal: `run_terminal` in `src/tools/terminal/`, execution in main via `electron/terminal-runner.ts` with workspace restriction and command denylist)
+  - `Ask`: single-pass text generation (no tools)
+  - `Agent`: `ToolLoopAgent` with tools from `src/tools/` registry (e.g. web-search: provider proxy in `action`, display with search icon and domain-only result badges; terminal: `run_terminal` in `src/tools/terminal/`, execution in main via `electron/terminal-runner.ts` with workspace restriction and command denylist; file-patch: `apply_file_patch` in `src/tools/file-patch/`, execution in main via `electron/file-patch-runner.ts` with workspace restriction, binary blocking, and checkpoint-based revert)
 
 ## Current Scope And Boundaries
 
 - current platform: desktop only
 - no backend service is required for basic operation
 - no shared cloud sync yet
-- agent mode includes web search and a workspace-restricted terminal tool (command denylist, default-deny network, timeout/output caps)
+- agent mode includes web search, a workspace-restricted terminal tool (command denylist, default-deny network, timeout/output caps), and a file patch tool (workspace-bounded, binary blocked, checkpoint revert)
 
 ## Forward Architecture Needs
 

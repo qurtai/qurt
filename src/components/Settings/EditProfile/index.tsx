@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Field from "@/components/Field";
 
 type EditProfileProps = {};
@@ -37,7 +37,7 @@ const EditProfile = ({}: EditProfileProps) => {
                         />
                     ) : (
                         <Icon
-                            className="w-8 h-8 dark:fill-n-1"
+                            className="size-8 dark:stroke-n-1"
                             name="profile"
                         />
                     )}

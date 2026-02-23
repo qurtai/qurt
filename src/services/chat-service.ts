@@ -2,18 +2,17 @@ import {
   CHAT_HISTORY_UPDATED_EVENT,
   DEFAULT_CHAT_TITLE,
   chatStore,
-  type ChatHistoryMessage,
   type ChatSession,
   type ChatStore,
 } from "../stores/chat-store";
-import type { AiChainStep } from "./ai-service";
-import type { ChatAttachment } from "../types/chat-attachment";
-import { ARCHIVED_CHAT_LIST_ID } from "./chat-list-service";
+import { ALEM_ATTACHMENT_PREFIX } from "./alem-chat-transport";
+import type { UIMessage } from "ai";
+import { ARCHIVED_CHAT_GROUP_ID } from "./chat-group-service";
 
 const DEFAULT_USER_AVATAR = "/images/avatar.jpg";
 
 export { CHAT_HISTORY_UPDATED_EVENT };
-export type { ChatHistoryMessage, ChatSession };
+export type { ChatSession };
 
 export interface ChatHistoryListItem {
   id: string;
@@ -27,134 +26,101 @@ export interface ChatHistoryListItem {
 }
 
 interface ListChatsOptions {
-  listId?: string;
+  groupId?: string;
 }
 
-function areMessagesEqual(
-  left: ChatHistoryMessage[],
-  right: ChatHistoryMessage[],
-): boolean {
+function getTextFromParts(parts: UIMessage["parts"]): string {
+  return parts
+    .filter((p): p is { type: "text"; text: string } => p.type === "text")
+    .map((p) => p.text)
+    .join("")
+    .trim();
+}
+
+function areMessagesEqual(left: UIMessage[], right: UIMessage[]): boolean {
   if (left.length !== right.length) {
     return false;
   }
 
   return left.every((message, index) => {
     const other = right[index];
-    return (
-      message.id === other?.id &&
-      message.role === other?.role &&
-      message.content === other?.content &&
-      message.reasoning === other?.reasoning &&
-      areChainStepsEqual(message.chainSteps, other?.chainSteps) &&
-      areAttachmentsEqual(message.attachments, other?.attachments)
-    );
-  });
-}
-
-function areAttachmentsEqual(
-  left: ChatAttachment[] | undefined,
-  right: ChatAttachment[] | undefined,
-): boolean {
-  const leftAttachments = left ?? [];
-  const rightAttachments = right ?? [];
-
-  if (leftAttachments.length !== rightAttachments.length) {
-    return false;
-  }
-
-  return leftAttachments.every((attachment, index) => {
-    const other = rightAttachments[index];
-    return (
-      attachment.id === other?.id &&
-      attachment.name === other?.name &&
-      attachment.mediaType === other?.mediaType &&
-      attachment.size === other?.size
-    );
-  });
-}
-
-function areChainStepsEqual(
-  left: AiChainStep[] | undefined,
-  right: AiChainStep[] | undefined,
-): boolean {
-  const a = left ?? [];
-  const b = right ?? [];
-  if (a.length !== b.length) return false;
-  return a.every((step, i) => {
-    const other = b[i];
-    if (!other || step.type !== other.type) return false;
-    if (step.type === "reasoning" && other.type === "reasoning") {
-      return step.text === other.text;
+    if (!other || message.id !== other.id || message.role !== other.role) {
+      return false;
     }
-    if (step.type === "tool" && other.type === "tool") {
-      return (
-        step.toolName === other.toolName &&
-        JSON.stringify(step.input) === JSON.stringify(other.input) &&
-        JSON.stringify(step.output) === JSON.stringify(other.output) &&
-        step.errorText === other.errorText
-      );
-    }
-    return false;
+    return JSON.stringify(message.parts) === JSON.stringify(other.parts);
   });
 }
 
-function previewFromMessage(message: ChatHistoryMessage | undefined): string {
+function previewFromMessage(message: UIMessage | undefined): string {
   if (!message) {
     return "No messages yet";
   }
 
-  const text = message.content.trim();
+  const text = getTextFromParts(message.parts);
   if (text) {
     return text;
   }
 
-  const attachments = message.attachments ?? [];
-  if (attachments.length === 0) {
+  const fileCount = message.parts.filter((p) => p.type === "file").length;
+  if (fileCount === 0) {
     return "No messages yet";
   }
 
-  if (attachments.length === 1) {
-    return `Attachment: ${attachments[0].name}`;
+  if (fileCount === 1) {
+    const filePart = message.parts.find((p) => p.type === "file");
+    const filename = filePart && "filename" in filePart ? filePart.filename : "file";
+    return `Attachment: ${filename}`;
   }
 
-  return `${attachments.length} attachments`;
+  return `${fileCount} attachments`;
 }
 
-function previewFromMessages(messages: ChatHistoryMessage[]): string {
+function previewFromMessages(messages: UIMessage[]): string {
   const message =
     [...messages].reverse().find((item) => item.role === "user") ?? messages.at(-1);
   return previewFromMessage(message);
 }
 
-function getLatestImageAttachment(messages: ChatHistoryMessage[]): ChatAttachment | undefined {
-  for (let messageIndex = messages.length - 1; messageIndex >= 0; messageIndex -= 1) {
-    const attachments = messages[messageIndex].attachments ?? [];
-    for (
-      let attachmentIndex = attachments.length - 1;
-      attachmentIndex >= 0;
-      attachmentIndex -= 1
-    ) {
-      const attachment = attachments[attachmentIndex];
-      if (attachment.mediaType.startsWith("image/")) {
-        return attachment;
+function getLatestImageFilePart(messages: UIMessage[]): {
+  url: string;
+  mediaType: string;
+  attachmentId?: string;
+} | undefined {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    for (const part of messages[i].parts) {
+      if (part.type === "file" && part.mediaType.startsWith("image/")) {
+        const url = part.url;
+        const attachmentId = url.startsWith(ALEM_ATTACHMENT_PREFIX)
+          ? url.slice(ALEM_ATTACHMENT_PREFIX.length)
+          : undefined;
+        return { url, mediaType: part.mediaType, attachmentId };
       }
+    }
+  }
+  return undefined;
+}
+
+async function resolveImagePreview(
+  filePart: { url: string; mediaType: string; attachmentId?: string } | undefined,
+): Promise<string | undefined> {
+  if (!filePart || typeof window === "undefined" || !window.alem) {
+    return undefined;
+  }
+
+  if (filePart.url.startsWith("data:")) {
+    return filePart.url;
+  }
+
+  if (filePart.attachmentId) {
+    try {
+      const data = await window.alem.readAttachment(filePart.attachmentId);
+      return `data:${filePart.mediaType};base64,${data}`;
+    } catch {
+      return undefined;
     }
   }
 
   return undefined;
-}
-
-async function resolveImagePreview(attachment: ChatAttachment | undefined): Promise<string | undefined> {
-  if (!attachment || typeof window === "undefined" || !window.alem) {
-    return undefined;
-  }
-
-  try {
-    const data = await window.alem.readAttachment(attachment.id);
-    return `data:${attachment.mediaType};base64,${data}`;
-  } catch {
-    return undefined;
-  }
 }
 
 function formatRelativeTime(isoDate: string): string {
@@ -182,12 +148,12 @@ function formatRelativeTime(isoDate: string): string {
   return `${days}d ago`;
 }
 
-function buildChatUrl(chatId: string, listId?: string): string {
-  if (!listId) {
+function buildChatUrl(chatId: string, groupId?: string): string {
+  if (!groupId) {
     return `/chat/${chatId}`;
   }
 
-  return `/chat/${chatId}?list=${encodeURIComponent(listId)}`;
+  return `/chat/${chatId}?list=${encodeURIComponent(groupId)}`;
 }
 
 export function buildChatTitle(prompt: string, maxLength = 52): string {
@@ -203,19 +169,19 @@ export class ChatService {
   constructor(private readonly store: ChatStore = chatStore) {}
 
   async listChats(options: ListChatsOptions = {}): Promise<ChatHistoryListItem[]> {
-    const selectedListId = options.listId?.trim() || "";
+    const selectedGroupId = options.groupId?.trim() || "";
     const sessions = await this.store.readSessions();
     const sortedSessions = [...sessions]
       .filter((session) => {
-        if (!selectedListId) {
+        if (!selectedGroupId) {
           return !session.isArchived;
         }
 
-        if (selectedListId === ARCHIVED_CHAT_LIST_ID) {
+        if (selectedGroupId === ARCHIVED_CHAT_GROUP_ID) {
           return session.isArchived;
         }
 
-        return !session.isArchived && session.chatListIds.includes(selectedListId);
+        return !session.isArchived && session.chatGroupIds.includes(selectedGroupId);
       })
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
@@ -224,48 +190,48 @@ export class ChatService {
         id: session.id,
         title: session.title,
         content: previewFromMessages(session.messages),
-        url: buildChatUrl(session.id, selectedListId || undefined),
+        url: buildChatUrl(session.id, selectedGroupId || undefined),
         time: formatRelativeTime(session.updatedAt),
         users: [DEFAULT_USER_AVATAR],
-        image: await resolveImagePreview(getLatestImageAttachment(session.messages)),
+        image: await resolveImagePreview(getLatestImageFilePart(session.messages)),
         isArchived: session.isArchived,
       })),
     );
   }
 
-  async getLatestChatInList(listId: string): Promise<ChatSession | null> {
-    const trimmedListId = listId.trim();
-    if (!trimmedListId) {
+  async getLatestChatInGroup(groupId: string): Promise<ChatSession | null> {
+    const trimmedGroupId = groupId.trim();
+    if (!trimmedGroupId) {
       return null;
     }
 
     const sessions = await this.store.readSessions();
     const matchingSessions = sessions
       .filter((session) => {
-        if (trimmedListId === ARCHIVED_CHAT_LIST_ID) {
+        if (trimmedGroupId === ARCHIVED_CHAT_GROUP_ID) {
           return session.isArchived;
         }
 
-        return !session.isArchived && session.chatListIds.includes(trimmedListId);
+        return !session.isArchived && session.chatGroupIds.includes(trimmedGroupId);
       })
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
     return matchingSessions[0] ?? null;
   }
 
-  async listChatCountsByList(): Promise<Record<string, number>> {
+  async listChatCountsByGroup(): Promise<Record<string, number>> {
     const sessions = await this.store.readSessions();
     const counts: Record<string, number> = {};
 
     for (const session of sessions) {
       if (session.isArchived) {
-        counts[ARCHIVED_CHAT_LIST_ID] = (counts[ARCHIVED_CHAT_LIST_ID] ?? 0) + 1;
+        counts[ARCHIVED_CHAT_GROUP_ID] = (counts[ARCHIVED_CHAT_GROUP_ID] ?? 0) + 1;
         continue;
       }
 
-      const listIds = new Set(session.chatListIds.filter((listId) => listId !== ARCHIVED_CHAT_LIST_ID));
-      for (const listId of listIds) {
-        counts[listId] = (counts[listId] ?? 0) + 1;
+      const groupIds = new Set(session.chatGroupIds.filter((id) => id !== ARCHIVED_CHAT_GROUP_ID));
+      for (const groupId of groupIds) {
+        counts[groupId] = (counts[groupId] ?? 0) + 1;
       }
     }
 
@@ -279,14 +245,14 @@ export class ChatService {
   async createChat(
     title?: string,
     options?: {
-      chatListId?: string;
+      chatGroupId?: string;
       terminalWorkspacePath?: string;
     },
   ): Promise<ChatSession> {
-    const listId = options?.chatListId?.trim();
+    const groupId = options?.chatGroupId?.trim();
     return this.store.createChat(title?.trim() || DEFAULT_CHAT_TITLE, {
-      chatListIds: listId ? [listId] : [],
-      isArchived: listId === ARCHIVED_CHAT_LIST_ID,
+      chatGroupIds: groupId ? [groupId] : [],
+      isArchived: groupId === ARCHIVED_CHAT_GROUP_ID,
       terminalWorkspacePath: options?.terminalWorkspacePath?.trim() || undefined,
     });
   }
@@ -298,7 +264,7 @@ export class ChatService {
     }
 
     const duplicatedChat = await this.store.createChat(`${current.title} (copy)`, {
-      chatListIds: current.chatListIds,
+      chatGroupIds: current.chatGroupIds,
       isArchived: current.isArchived,
       terminalWorkspacePath: current.terminalWorkspacePath,
     });
@@ -313,9 +279,9 @@ export class ChatService {
     );
   }
 
-  async addChatToList(chatId: string, listId: string): Promise<ChatSession | null> {
-    const trimmedListId = listId.trim();
-    if (!trimmedListId || trimmedListId === ARCHIVED_CHAT_LIST_ID) {
+  async addChatToGroup(chatId: string, groupId: string): Promise<ChatSession | null> {
+    const trimmedGroupId = groupId.trim();
+    if (!trimmedGroupId || trimmedGroupId === ARCHIVED_CHAT_GROUP_ID) {
       return null;
     }
 
@@ -324,12 +290,12 @@ export class ChatService {
       return null;
     }
 
-    if (current.chatListIds.includes(trimmedListId)) {
+    if (current.chatGroupIds.includes(trimmedGroupId)) {
       return current;
     }
 
     return this.store.updateChat(chatId, {
-      chatListIds: [...current.chatListIds, trimmedListId],
+      chatGroupIds: [...current.chatGroupIds, trimmedGroupId],
     });
   }
 
@@ -337,8 +303,8 @@ export class ChatService {
     chatId: string,
     update: {
       title?: string;
-      messages?: ChatHistoryMessage[];
-      chatListIds?: string[];
+      messages?: UIMessage[];
+      chatGroupIds?: string[];
       isArchived?: boolean;
       terminalWorkspacePath?: string;
     },
@@ -346,23 +312,26 @@ export class ChatService {
     return this.store.updateChat(chatId, update);
   }
 
-  async saveMessages(chatId: string, messages: ChatHistoryMessage[]): Promise<ChatSession | null> {
+  async saveMessages(chatId: string, messages: UIMessage[]): Promise<ChatSession | null> {
     const current = await this.store.getChat(chatId);
     if (!current) {
       return null;
     }
 
-    const firstUserMessage = messages.find((message) => message.role === "user");
-    const firstUserText = firstUserMessage?.content.trim() || "";
-    const firstAttachmentName = firstUserMessage?.attachments?.[0]?.name || "";
-    const titleSource = firstUserText || (firstAttachmentName ? `Attachment: ${firstAttachmentName}` : "");
+    const firstUserMessage = messages.find((m) => m.role === "user");
+    const firstUserText = firstUserMessage
+      ? getTextFromParts(firstUserMessage.parts)
+      : "";
+    const firstFilePart = firstUserMessage?.parts.find((p) => p.type === "file");
+    const firstFileName =
+      firstFilePart && "filename" in firstFilePart ? firstFilePart.filename : "";
+    const titleSource =
+      firstUserText || (firstFileName ? `Attachment: ${firstFileName}` : "");
     const nextTitle =
       current.title === DEFAULT_CHAT_TITLE && titleSource
         ? buildChatTitle(titleSource)
         : current.title;
 
-    // Opening an existing chat rehydrates the same messages through the hook.
-    // Skip writes so "updatedAt" only changes when there is real new content.
     if (nextTitle === current.title && areMessagesEqual(current.messages, messages)) {
       return current;
     }

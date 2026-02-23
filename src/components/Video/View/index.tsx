@@ -1,5 +1,5 @@
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type ViewProps = {};
 
@@ -13,7 +13,7 @@ const View = ({}: ViewProps) => (
             alt=""
         />
         <button className="absolute top-1/2 left-1/2 w-12 h-12 pl-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-n-1/90 transition-colors hover:bg-n-1 md:w-10 md:h-10">
-            <Icon className="w-4 h-4" name="play" />
+            <Icon className="size-4" name="play" />
         </button>
     </div>
 );

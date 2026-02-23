@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 const details = [
     "Customizable AI models",
@@ -24,7 +24,7 @@ const Details = ({}: DetailsProps) => (
         <div className="mt-8 pt-8 space-y-5 border-t border-n-4/25 lg:hidden">
             {details.map((x: any, index: number) => (
                 <div className="flex base2" key={index}>
-                    <Icon className="mr-3 fill-primary-1" name="check-circle" />
+                    <Icon className="mr-3 stroke-primary-1" name="check-circle" />
                     {x}
                 </div>
             ))}

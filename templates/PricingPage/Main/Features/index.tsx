@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type FeaturesProps = {
     items: any;
@@ -28,7 +28,7 @@ const Features = ({ items }: FeaturesProps) => (
                     <div className="flex items-center flex-1 px-8">
                         <Icon
                             className={`${
-                                item.free ? "fill-primary-1" : "fill-n-4"
+                                item.free ? "stroke-primary-1" : "stroke-n-4"
                             }`}
                             name={item.free ? "check-thin" : "close"}
                         />
@@ -36,7 +36,7 @@ const Features = ({ items }: FeaturesProps) => (
                     <div className="flex items-center flex-1 px-8">
                         <Icon
                             className={`${
-                                item.pro ? "fill-primary-1" : "fill-n-4"
+                                item.pro ? "stroke-primary-1" : "stroke-n-4"
                             }`}
                             name={item.pro ? "check-thin" : "close"}
                         />
@@ -47,7 +47,7 @@ const Features = ({ items }: FeaturesProps) => (
                     <div className="flex items-center flex-1 px-8">
                         <Icon
                             className={`${
-                                item.enterprise ? "fill-primary-1" : "fill-n-4"
+                                item.enterprise ? "stroke-primary-1" : "stroke-n-4"
                             }`}
                             name={item.enterprise ? "check-thin" : "close"}
                         />

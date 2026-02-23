@@ -19,6 +19,9 @@ interface AlemApi {
   runTerminal: (request: import("@/tools/terminal/types").TerminalRunRequest) => Promise<import("@/tools/terminal/types").TerminalRunResult>;
   getTerminalWorkspaceRoot: () => Promise<string>;
   openFolderDialog: () => Promise<string | null>;
+  applyFilePatch: (request: import("@/tools/file-patch/types").FilePatchRequest) => Promise<import("@/tools/file-patch/types").FilePatchResult>;
+  restoreFilePatchCheckpoint: (checkpointId: string) => Promise<{ restored: boolean; error?: string }>;
+  restoreFilePatchCheckpoints: (checkpointIds: string[]) => Promise<{ restored: boolean; error?: string }>;
   platform: string;
 }
 

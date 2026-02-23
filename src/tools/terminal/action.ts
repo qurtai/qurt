@@ -69,7 +69,6 @@ Use tokenized 'command' (e.g. ['git','status']).
 Network is disabled by default. Dangerous commands (rm -rf, sudo, etc.) are blocked.
 Following commands are blocked: 
 ${[...DENYLIST_COMMANDS].sort().join("\n")}
-
 `;
 export function getTerminalToolSet(
   _provider: AiProvider,
@@ -77,7 +76,6 @@ export function getTerminalToolSet(
   options?: import("../types").ToolSetOptions
 ): ToolSet {
   const workspaceOverride = options?.terminalWorkspaceOverride;
-
   return {
     run_terminal: tool({
       description,
@@ -93,11 +91,17 @@ export function getTerminalToolSet(
             truncated: false,
           };
         }
-        const request =
+        const trimmedOverride =
           typeof workspaceOverride === "string" && workspaceOverride.trim()
-            ? { ...input, workspaceOverride: workspaceOverride.trim() }
-            : input;
-        return window.alem.runTerminal(request) as Promise<TerminalRunResult>;
+            ? workspaceOverride.trim()
+            : undefined;
+
+        const request = trimmedOverride
+          ? { ...input, workspaceOverride: trimmedOverride }
+          : input;
+        return window.alem.runTerminal(
+          request
+        ) as Promise<TerminalRunResult>;
       },
     }),
   };

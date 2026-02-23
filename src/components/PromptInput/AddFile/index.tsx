@@ -1,5 +1,5 @@
 import { type ChangeEvent, useRef } from "react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type AddFileProps = {
   onSelectFiles?: (files: File[]) => void;
@@ -24,7 +24,7 @@ const AddFile = ({ onSelectFiles }: AddFileProps) => {
         type="button"
       >
         <Icon
-          className="w-5 h-5 fill-n-4 transition-colors group-hover:fill-primary-1"
+          className="size-5 stroke-n-4 transition-colors group-hover:stroke-primary-1"
           name="plus-circle"
         />
       </button>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
 import Settings from "@/components/Settings";
 
@@ -77,7 +77,7 @@ const Profile = ({}: ProfileProps) => {
                                             onClick={item.onClick}
                                         >
                                             <Icon
-                                                className="mr-4 fill-n-4 transition-colors group-hover:fill-primary-1"
+                                                className="mr-4 stroke-n-4 transition-colors group-hover:stroke-primary-1"
                                                 name={item.icon}
                                             />
                                             {item.title}

@@ -5,38 +5,47 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
-import { AlemContext } from "../App";
+import { useChat } from "@ai-sdk/react";
 import {
-  continueChatReply,
-  generateChatReply,
-  streamChatReply,
-  type AiChatMessage,
-  type AiProvider,
-  type PendingApproval,
-} from "../services/ai-service";
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+  lastAssistantMessageIsCompleteWithToolCalls,
+  type UIMessage,
+} from "ai";
+import { AlemContext } from "../App";
+import { createAgent, type AiProvider } from "../services/ai-service";
+import {
+  AlemChatTransport,
+  ALEM_ATTACHMENT_PREFIX,
+} from "../services/alem-chat-transport";
 import type { ChatAttachment } from "../types/chat-attachment";
 import type { PromptMode } from "../types/prompt-mode";
 
-export interface ChatMessage extends AiChatMessage {
-  id: string;
-}
-
 interface UseAlemChatOptions {
   chatId?: string;
-  initialMessages?: ChatMessage[];
-  onMessagesChange?: (messages: ChatMessage[]) => void;
+  initialMessages?: UIMessage[];
+  onMessagesChange?: (messages: UIMessage[], sourceChatId?: string) => void;
   /** Per-chat workspace root for terminal tool; overrides global default when set. */
   terminalWorkspaceOverride?: string;
 }
 
-function createMessageId(prefix: string): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return `${prefix}-${crypto.randomUUID()}`;
+function isToolApprovalRequested(part: UIMessage["parts"][number]): boolean {
+  if (!(part.type === "dynamic-tool" || part.type.startsWith("tool-"))) {
+    return false;
   }
+  return "state" in part && part.state === "approval-requested";
+}
 
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+function hasPendingToolApprovals(messages: UIMessage[]): boolean {
+  const lastAssistantMessage = [...messages]
+    .reverse()
+    .find((message) => message.role === "assistant");
+  if (!lastAssistantMessage) {
+    return false;
+  }
+  return lastAssistantMessage.parts.some(isToolApprovalRequested);
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -57,6 +66,15 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+function attachmentsToFileParts(attachments: ChatAttachment[]) {
+  return attachments.map((a) => ({
+    type: "file" as const,
+    mediaType: a.mediaType,
+    filename: a.name,
+    url: `${ALEM_ATTACHMENT_PREFIX}${a.id}`,
+  }));
+}
+
 export function useAlemChat({
   chatId,
   initialMessages = [],
@@ -64,19 +82,19 @@ export function useAlemChat({
   terminalWorkspaceOverride,
 }: UseAlemChatOptions = {}) {
   const { settings } = useContext(AlemContext);
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [pendingAttachments, setPendingAttachments] = useState<ChatAttachment[]>(
     [],
   );
+  const [attachmentError, setAttachmentError] = useState<Error | undefined>(
+    undefined,
+  );
   const [promptMode, setPromptMode] = useState<PromptMode>("ask");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | undefined>(undefined);
-  const [pendingApproval, setPendingApproval] = useState<{
-    messageId: string;
-    pendingApprovals: PendingApproval[];
-    continueMessages: unknown[];
-  } | null>(null);
+  const [wasStoppedByUser, setWasStoppedByUser] = useState(false);
+  const activeRequestModeRef = useRef<PromptMode>("ask");
+  const inFlightChatIdRef = useRef<string | undefined>(chatId);
+  const terminalWorkspaceOverrideRef = useRef(terminalWorkspaceOverride);
+  terminalWorkspaceOverrideRef.current = terminalWorkspaceOverride;
 
   const activeProvider = settings?.activeProvider;
   const provider: AiProvider =
@@ -88,23 +106,59 @@ export function useAlemChat({
 
   const ready = typeof window !== "undefined" && !!window.alem;
   const model = settings?.activeModel || "gpt-5-mini-medium";
-  const idPrefix = chatId || "chat";
-  const messageSeed = useMemo(
+
+  const transport = useMemo(
     () =>
-      initialMessages
-        .map((message) => {
-          const attachmentSeed = (message.attachments ?? [])
-            .map((attachment) => `${attachment.id}:${attachment.name}:${attachment.size}`)
-            .join(",");
-          return `${message.id}:${message.role}:${message.content}:${message.reasoning ?? ""}:${attachmentSeed}`;
-        })
-        .join("|"),
-    [initialMessages],
+      new AlemChatTransport({
+        getAgent: async () => {
+          const apiKey = await window.alem!.getApiKey(provider);
+          return createAgent({
+            provider,
+            model,
+            apiKey,
+            mode: activeRequestModeRef.current,
+            terminalWorkspaceOverride: terminalWorkspaceOverrideRef.current,
+          });
+        },
+        sendReasoning: true,
+        resolveAttachment: (id) => window.alem!.readAttachment(id),
+      }),
+    [model, provider],
   );
 
+  const {
+    messages,
+    sendMessage,
+    status,
+    stop,
+    error,
+    setMessages,
+    addToolApprovalResponse,
+    clearError,
+  } = useChat({
+    id: chatId,
+    messages: initialMessages,
+    transport,
+    sendAutomaticallyWhen: (options) => lastAssistantMessageIsCompleteWithApprovalResponses(options) || lastAssistantMessageIsCompleteWithToolCalls(options),
+    onFinish: ({ messages: finishedMessages }) => {
+      onMessagesChange?.(finishedMessages, inFlightChatIdRef.current);
+      if (!hasPendingToolApprovals(finishedMessages)) {
+        activeRequestModeRef.current = "ask";
+      }
+    },
+  });
+
+  const isLoading = status === "streaming" || status === "submitted";
+  const displayError = error ?? attachmentError;
+
   useEffect(() => {
-    setMessages(initialMessages);
-  }, [messageSeed]);
+    setWasStoppedByUser(false);
+  }, [chatId]);
+
+  const stopWithTracking = useCallback(() => {
+    setWasStoppedByUser(true);
+    stop();
+  }, [stop]);
 
   const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
@@ -137,14 +191,16 @@ export function useAlemChat({
           }
         }
 
-        setError(
-          err instanceof Error ? err : new Error("Failed to attach one or more files."),
+        setAttachmentError(
+          err instanceof Error
+            ? err
+            : new Error("Failed to attach one or more files."),
         );
         return;
       }
 
       setPendingAttachments((current) => [...current, ...nextAttachments]);
-      setError(undefined);
+      setAttachmentError(undefined);
     },
     [ready],
   );
@@ -168,266 +224,77 @@ export function useAlemChat({
       mode: PromptMode = "ask",
     ): Promise<boolean> => {
       const prompt = rawPrompt.trim();
-      if ((!prompt && attachments.length === 0) || isLoading || !ready) {
+      if ((!prompt && attachments.length === 0) || !ready) {
         return false;
       }
 
-      const userMessage: ChatMessage = {
-        id: createMessageId(idPrefix),
-        role: "user",
-        content: prompt,
-        attachments: attachments.length > 0 ? attachments : undefined,
-      };
+      const fileParts = attachmentsToFileParts(attachments);
+      const hasContent = prompt || fileParts.length > 0;
+      if (!hasContent) {
+        return false;
+      }
 
-      const nextMessages = [...messages, userMessage];
-      setMessages(nextMessages);
-      onMessagesChange?.(nextMessages);
-      setError(undefined);
-      setIsLoading(true);
+      activeRequestModeRef.current = mode;
+      inFlightChatIdRef.current = chatId;
 
-      const assistantId = createMessageId(idPrefix);
-      const messagesForApi = nextMessages.map((message) => ({
-        role: message.role,
-        content: message.content,
-        attachments: message.attachments,
-      }));
-
+      setWasStoppedByUser(false);
       try {
-        const apiKey = await window.alem.getApiKey(provider);
-
-        if (mode === "agent") {
-          const placeholder: ChatMessage = {
-            id: assistantId,
-            role: "assistant",
-            content: "",
-            chainSteps: [],
-          };
-          setMessages((prev) => [...prev, placeholder]);
-          onMessagesChange?.([...nextMessages, placeholder]);
-
-          const reply = await streamChatReply({
-            provider,
-            model,
-            apiKey,
-            mode,
-            messages: messagesForApi,
-            resolveAttachmentData: (attachment) =>
-              window.alem.readAttachment(attachment.id),
-            terminalWorkspaceOverride,
-            onStepsUpdate(chainSteps) {
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === assistantId
-                    ? { ...m, chainSteps: [...chainSteps] }
-                    : m,
-                ),
-              );
-            },
-            onTextUpdate(text) {
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === assistantId ? { ...m, content: text } : m,
-                ),
-              );
-            },
-          });
-
-          const assistantMessage: ChatMessage = {
-            id: assistantId,
-            role: "assistant",
-            content: reply.text,
-            reasoning: reply.reasoning,
-            chainSteps: reply.chainSteps ?? [],
-          };
-          setMessages((prev) => {
-            const updated = prev.map((m) =>
-              m.id === assistantId ? assistantMessage : m,
-            );
-            onMessagesChange?.(updated);
-            return updated;
-          });
-          if (reply.pendingApprovals?.length && reply.continueMessages) {
-            setPendingApproval({
-              messageId: assistantId,
-              pendingApprovals: reply.pendingApprovals,
-              continueMessages: reply.continueMessages,
-            });
-          }
-        } else {
-          const reply = await generateChatReply({
-            provider,
-            model,
-            apiKey,
-            mode,
-            messages: messagesForApi,
-            resolveAttachmentData: (attachment) =>
-              window.alem.readAttachment(attachment.id),
-            terminalWorkspaceOverride,
-          });
-
-          const assistantMessage: ChatMessage = {
-            id: assistantId,
-            role: "assistant",
-            content: reply.text,
-            reasoning: reply.reasoning,
-            chainSteps: reply.chainSteps,
-          };
-          const updatedMessages = [...nextMessages, assistantMessage];
-          setMessages(updatedMessages);
-          onMessagesChange?.(updatedMessages);
-        }
-
+        await sendMessage({
+          text: prompt,
+          files: fileParts,
+        });
         return true;
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err
-            : new Error("Failed to get a response from the model."),
-        );
+      } catch {
+        activeRequestModeRef.current = "ask";
         return false;
-      } finally {
-        setIsLoading(false);
       }
     },
-    [idPrefix, isLoading, messages, model, onMessagesChange, provider, ready, terminalWorkspaceOverride],
+    [chatId, ready, sendMessage],
   );
 
-  const submitToolApproval = useCallback(
-    async (approvalId: string, approved: boolean, reason?: string) => {
-      if (!pendingApproval || !ready) return;
-      setIsLoading(true);
-      setError(undefined);
-      try {
-        if (!approved) {
-          const approvalIndex = pendingApproval.pendingApprovals.findIndex(
-            (p) => p.approvalId === approvalId,
-          );
-          if (approvalIndex >= 0) {
-            setMessages((prev) => {
-              const currentMessage = prev.find(
-                (m) => m.id === pendingApproval.messageId,
-              );
-              const steps = currentMessage?.chainSteps ?? [];
-              let toolStepIndex = -1;
-              let count = 0;
-              for (let i = 0; i < steps.length; i++) {
-                const s = steps[i];
-                if (s.type !== "tool") continue;
-                if (s.output === undefined || s.output === null) {
-                  if (count === approvalIndex) {
-                    toolStepIndex = i;
-                    break;
-                  }
-                  count++;
-                }
-              }
-              if (toolStepIndex < 0) return prev;
-              const deniedOutput = {
-                stdout: "",
-                stderr: reason?.trim() || "User rejected.",
-                outcome: { type: "denied" as const, reason: "User rejected." },
-                duration_ms: 0,
-                truncated: false,
-              };
-              const nextSteps = steps.map((s, i) =>
-                i === toolStepIndex && s.type === "tool"
-                  ? { ...s, output: deniedOutput }
-                  : s,
-              );
-              const assistantMessage: ChatMessage = {
-                ...currentMessage!,
-                id: pendingApproval.messageId,
-                role: "assistant",
-                content: currentMessage?.content ?? "",
-                reasoning: currentMessage?.reasoning,
-                chainSteps: nextSteps,
-              };
-              const updated = prev.map((m) =>
-                m.id === pendingApproval.messageId ? assistantMessage : m,
-              );
-              onMessagesChange?.(updated);
-              return updated;
-            });
-          }
-        }
+  const handleSubmit = useCallback(
+    async (event?: FormEvent<HTMLFormElement>): Promise<void> => {
+      event?.preventDefault?.();
 
-        const apiKey = await window.alem.getApiKey(provider);
-        const reply = await continueChatReply({
-          provider,
-          model,
-          apiKey,
-          mode: "agent",
-          messages: [],
-          terminalWorkspaceOverride,
-          continueMessages: pendingApproval.continueMessages as import("ai").ModelMessage[],
-          approvalResponses: [{ approvalId, approved, reason }],
-        });
-        setMessages((prev) => {
-          const currentMessage = prev.find((m) => m.id === pendingApproval.messageId);
-          const existingSteps = currentMessage?.chainSteps ?? [];
-          const newSteps = reply.chainSteps ?? [];
-          const mergedSteps = [...existingSteps, ...newSteps];
-          const assistantMessage: ChatMessage = {
-            id: pendingApproval.messageId,
-            role: "assistant",
-            content: reply.text,
-            reasoning: reply.reasoning,
-            chainSteps: mergedSteps,
-          };
-          const updated = prev.map((m) =>
-            m.id === pendingApproval.messageId ? assistantMessage : m,
-          );
-          onMessagesChange?.(updated);
-          return updated;
-        });
-        if (reply.pendingApprovals?.length && reply.continueMessages) {
-          setPendingApproval({
-            messageId: pendingApproval.messageId,
-            pendingApprovals: reply.pendingApprovals,
-            continueMessages: reply.continueMessages,
-          });
-        } else {
-          setPendingApproval(null);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("Failed to continue the run."),
-        );
-      } finally {
-        setIsLoading(false);
+      const hasSubmitted = await submitPrompt(
+        input,
+        pendingAttachments,
+        promptMode,
+      );
+      if (hasSubmitted) {
+        setInput("");
+        setPendingAttachments([]);
       }
     },
-    [model, onMessagesChange, pendingApproval, provider, ready, terminalWorkspaceOverride],
+    [input, pendingAttachments, promptMode, submitPrompt],
   );
 
-  const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
-
-    const hasSubmitted = await submitPrompt(input, pendingAttachments, promptMode);
-    if (hasSubmitted) {
-      setInput("");
-      setPendingAttachments([]);
-      setPromptMode("ask");
-    }
-  };
+  const setInputValue = useCallback((value: string) => {
+    setInput(value);
+  }, []);
 
   return {
     messages,
     input,
-    pendingAttachments,
     isLoading,
-    error,
+    error: displayError,
     handleInputChange,
     handleSubmit,
     submitPrompt,
-    submitToolApproval,
-    pendingApproval,
+    addToolApprovalResponse,
     addAttachments,
     removePendingAttachment,
+    pendingAttachments,
     promptMode,
     setPromptMode,
     ready,
     provider,
     model,
+    sendMessage,
+    stop: stopWithTracking,
+    wasStoppedByUser: wasStoppedByUser && !isLoading,
+    setMessages,
+    setInputValue,
+    clearError,
   };
 }

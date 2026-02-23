@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type NavigationType = {
     title: string;
@@ -32,7 +32,7 @@ const Navigation = ({ visible, items }: NavigationProps) => {
                         to={item.url}
                         key={index}
                     >
-                        <Icon className={item.color} name={item.icon} />
+                        <Icon className={item.color?.replace("fill-", "stroke-")} name={item.icon} />
                         {!visible && <div className="ml-5">{item.title}</div>}
                     </Link>
                 ) : (
@@ -43,7 +43,7 @@ const Navigation = ({ visible, items }: NavigationProps) => {
                         key={index}
                         onClick={item.onClick}
                     >
-                        <Icon className={item.color} name={item.icon} />
+                        <Icon className={item.color?.replace("fill-", "stroke-")} name={item.icon} />
                         {!visible && <div className="ml-5">{item.title}</div>}
                         {item.title === "Search" && !visible && (
                             <div className="ml-auto px-2 rounded-md bg-n-4/50 caption1 font-semibold text-n-3">

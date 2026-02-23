@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type MenuProps = {
     buttons: any;
@@ -32,12 +32,12 @@ const Menu = ({ buttons, value, setValue }: MenuProps) => {
                 onClick={() => handleClick(button)}
             >
                 <Icon
-                    className={`w-4 h-4 mr-3 transition-colors ${
+                    className={`size-4 mr-3 transition-colors ${
                         button.id === "delete-account"
-                            ? `!fill-accent-1`
-                            : `fill-n-4 ${
+                            ? `!stroke-accent-1`
+                            : `stroke-n-4 ${
                                   value === button &&
-                                  "fill-n-7 dark:fill-n-1 dark:group-hover:fill-n-1"
+                                  "stroke-n-7 dark:stroke-n-1 dark:group-hover:stroke-n-1"
                               }`
                     }`}
                     name={button.icon}

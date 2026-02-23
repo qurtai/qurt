@@ -17,6 +17,7 @@ Reliability posture and hardening plan for `alem`.
 - attachment files stored on disk with metadata mapping
 - IPC boundary is explicit, reducing hidden renderer/main coupling
 - agent mode uses bounded tool loops (`stepCountIs`) to prevent runaway iterations
+- file patch tool creates checkpoints before writes; restore checkpoint reverts all file changes after that user message atomically, deletes that message and all following messages, and puts the user message content back in the prompt input for re-editing; checkpoints pruned with bounded retention
 
 ## Known Gaps
 

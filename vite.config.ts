@@ -35,7 +35,7 @@ export default defineConfig({
       { find: "@/constants", replacement: path.resolve(__dirname, "src/constants") },
       { find: "@/tools", replacement: path.resolve(__dirname, "src/tools") },
       { find: "@/mocks", replacement: path.resolve(__dirname, "src/mocks") },
-      { find: "@/utils", replacement: path.resolve(__dirname, "utils") },
+      { find: "@/utils", replacement: path.resolve(__dirname, "src/utils") },
       { find: "@/lib", replacement: path.resolve(__dirname, "src/lib") },
       { find: "@/electron", replacement: path.resolve(__dirname, "electron") },
     ],

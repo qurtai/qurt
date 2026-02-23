@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Select from "@/components/Select";
 import { CHAT_HISTORY_UPDATED_EVENT } from "@/services/chat-service";
 import {
@@ -86,8 +86,8 @@ const Search = () => {
                     type="submit"
                 >
                     <Icon
-                        className="w-8 h-8 fill-n-4/50 transition-colors group-hover:fill-n-7 dark:group-hover:fill-n-3"
-                        name="search-1"
+                        className="size-8 stroke-n-4/50 transition-colors group-hover:stroke-n-7 dark:group-hover:stroke-n-3"
+                        name="search"
                     />
                 </button>
                 <input

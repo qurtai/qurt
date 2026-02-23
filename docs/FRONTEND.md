@@ -24,7 +24,7 @@ Frontend implementation guide for `alem`.
 - `AlemContext` (`src/App.tsx`) stores user settings in memory
 - settings persist through `window.alem` IPC bridge
 - chat orchestration lives in `src/hooks/useAlemChat.ts`
-- chat list/history persistence is in `src/stores/chat-store.ts` + `src/services/chat-service.ts`
+- chat group/history persistence is in `src/stores/chat-store.ts` + `src/services/chat-service.ts`
 - right sidebar history supports multi-select actions (`archive`, `delete`) backed by chat-store APIs
 - archive is a soft state (`isArchived`) so archived chats are hidden from active history without hard deletion
 - chat history items include the latest attached image preview when the conversation has image attachments

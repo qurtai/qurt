@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
 
 type ItemProps = {
@@ -21,7 +21,7 @@ const Item = ({ item }: ItemProps) => {
                 <div className="table-cell align-middle py-3 pl-5 border-t border-n-3 text-[#56A171] md:shrink-0 md:w-1/2 md:pl-0 md:pr-5 dark:border-n-5/50">
                     <div className="inline-flex items-center md:flex">
                         <Icon
-                            className="shrink-0 w-5 h-5 mr-2 fill-[#56A171]"
+                            className="shrink-0 size-5 mr-2 stroke-[#56A171]"
                             name="check-circle"
                         />
                         <div className="md:w-[calc(100%-1.25rem)] md:truncate">
@@ -32,7 +32,7 @@ const Item = ({ item }: ItemProps) => {
                 <div className="table-cell align-middle py-3 pl-5 pr-5 text-center border-t border-n-3 text-0 md:hidden dark:border-n-5/50">
                     <button className="group" onClick={() => setVisible(true)}>
                         <Icon
-                            className="fill-n-4/75 transition-colors group-hover:fill-primary-1"
+                            className="stroke-n-4/75 transition-colors group-hover:stroke-primary-1"
                             name="play-circle"
                         />
                     </button>

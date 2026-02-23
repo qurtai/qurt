@@ -23,6 +23,9 @@ export interface AlemApi {
   runTerminal: (request: unknown) => Promise<unknown>;
   getTerminalWorkspaceRoot: () => Promise<string>;
   openFolderDialog: () => Promise<string | null>;
+  applyFilePatch: (request: unknown) => Promise<unknown>;
+  restoreFilePatchCheckpoint: (checkpointId: string) => Promise<{ restored: boolean; error?: string }>;
+  restoreFilePatchCheckpoints: (checkpointIds: string[]) => Promise<{ restored: boolean; error?: string }>;
   platform: string;
 }
 
@@ -44,5 +47,11 @@ contextBridge.exposeInMainWorld("alem", {
   getTerminalWorkspaceRoot: () =>
     ipcRenderer.invoke("get-terminal-workspace-root"),
   openFolderDialog: () => ipcRenderer.invoke("open-folder-dialog"),
+  applyFilePatch: (request: unknown) =>
+    ipcRenderer.invoke("apply-file-patch", request),
+  restoreFilePatchCheckpoint: (checkpointId: string) =>
+    ipcRenderer.invoke("restore-file-patch-checkpoint", checkpointId),
+  restoreFilePatchCheckpoints: (checkpointIds: string[]) =>
+    ipcRenderer.invoke("restore-file-patch-checkpoints", checkpointIds),
   platform: process.platform,
 } satisfies AlemApi);

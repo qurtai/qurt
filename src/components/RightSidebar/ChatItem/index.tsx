@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
-import { twMerge } from "tailwind-merge";
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
-import Users from "@/components/Users";
+import { Icon } from "@/utils/icons";
 import type { ChatHistoryListItem } from "@/services/chat-service";
+import { DEFAULT_CHAT_TITLE } from "@/stores/chat-store";
 
 type ChatItemProps = {
     item: ChatHistoryListItem;
@@ -11,7 +10,20 @@ type ChatItemProps = {
     onToggleActive: (chatId: string) => void;
 };
 
+/** Use message preview as main label when title is still the default. */
+function getDisplayLabels(item: ChatHistoryListItem) {
+    const useContentAsMain =
+        item.title === DEFAULT_CHAT_TITLE &&
+        item.content &&
+        item.content !== "No messages yet";
+    return {
+        main: useContentAsMain ? item.content : item.title,
+        sub: useContentAsMain ? null : item.content,
+    };
+}
+
 const ChatItem = ({ item, active, onToggleActive }: ChatItemProps) => {
+    const { main, sub } = getDisplayLabels(item);
     return (
         <div className="relative mt-2">
             <button
@@ -21,7 +33,7 @@ const ChatItem = ({ item, active, onToggleActive }: ChatItemProps) => {
                 onClick={() => onToggleActive(item.id)}
             >
                 <Icon
-                    className={`w-4 h-4 fill-n-1 opacity-0 transition-opacity ${
+                    className={`size-4 stroke-n-1 opacity-0 transition-opacity ${
                         active && "opacity-100"
                     }`}
                     name="check"
@@ -33,12 +45,19 @@ const ChatItem = ({ item, active, onToggleActive }: ChatItemProps) => {
                         active && "bg-n-3/75 dark:bg-n-5"
                     }`}
                 >
-                    <div className="base1 font-semibold dark:text-n-1">
-                        {item.title}
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="base1 font-semibold dark:text-n-1 min-w-0 flex-1 truncate">
+                            {main}
+                        </div>
+                        <span className="caption1 text-n-4 shrink-0">
+                            {item.time}
+                        </span>
                     </div>
-                    <div className="mt-1 truncate caption1 text-n-4">
-                        {item.content}
-                    </div>
+                    {sub !== null && (
+                        <div className="mt-1 truncate caption1 text-n-4">
+                            {sub}
+                        </div>
+                    )}
                     {item.image && (
                         <div className="relative mt-4 mb-4 aspect-[1.5]">
                             <Image

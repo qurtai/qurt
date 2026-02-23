@@ -1,6 +1,6 @@
 import { Listbox, Transition } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type SelectProps = {
     label?: string;
@@ -70,8 +70,8 @@ const Select = ({
                         )}
                         {icon && (
                             <Icon
-                                className={`shrink-0 mr-2 dark:fill-n-4 ${
-                                    small && "w-5 h-5 mr-1.5"
+                                className={`shrink-0 mr-2 dark:stroke-n-4 ${
+                                    small && "size-5 mr-1.5"
                                 } ${classIcon}`}
                                 name={icon}
                             />
@@ -84,7 +84,7 @@ const Select = ({
                         )}
                         {value?.icon && (
                             <Icon
-                                className="w-5 h-5 mr-3 dark:fill-n-1"
+                                className="size-5 mr-3 dark:stroke-n-1"
                                 name={value.icon}
                             />
                         )}
@@ -100,7 +100,7 @@ const Select = ({
                             )}
                         </span>
                         <Icon
-                            className={`shrink-0 ml-2 transition-transform dark:fill-n-1 ${
+                            className={`shrink-0 ml-2 transition-transform dark:stroke-n-1 ${
                                 open && "rotate-180"
                             } ${small && "ml-1"} ${classArrow}`}
                             name="arrow-down"
@@ -145,14 +145,14 @@ const Select = ({
                                     )}
                                     {item.icon && (
                                         <Icon
-                                            className="w-5 h-5 mt-0.5 mr-3 dark:fill-n-1"
+                                            className="size-5 mt-0.5 mr-3 dark:stroke-n-1"
                                             name={item.icon}
                                         />
                                     )}
                                     <div className="mr-auto">{item.title}</div>
                                     {!small && (
                                         <Icon
-                                            className="hidden w-5 h-5 ml-2 mt-0.5 fill-n-7 ui-selected:inline-block dark:fill-n-1"
+                                            className="hidden size-5 ml-2 mt-0.5 stroke-n-7 ui-selected:inline-block dark:stroke-n-1"
                                             name="check-thin"
                                         />
                                     )}

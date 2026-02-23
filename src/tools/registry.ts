@@ -1,9 +1,10 @@
 import type { ToolSet } from "ai";
 import type { AiProvider, ToolSetOptions } from "./types";
+import { filePatchTool } from "./file-patch";
 import { terminalTool } from "./terminal";
 import { webSearchTool } from "./web-search";
 
-const definitions = [webSearchTool, terminalTool];
+const definitions = [webSearchTool, terminalTool, filePatchTool];
 
 const byDisplayId = new Map<string | undefined, (typeof definitions)[number]>();
 for (const def of definitions) {

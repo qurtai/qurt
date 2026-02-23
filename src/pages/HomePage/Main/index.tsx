@@ -102,7 +102,7 @@ const Main = () => {
     try {
       const titleSource = prompt || `Attachment: ${pendingAttachments[0]?.name || ""}`;
       const chat = await chatService.createChat(buildChatTitle(titleSource), {
-        chatListId: activeListId,
+        chatGroupId: activeListId,
         terminalWorkspacePath: workspacePath.trim() || undefined,
       });
       setInput("");

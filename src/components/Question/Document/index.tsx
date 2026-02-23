@@ -1,5 +1,5 @@
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type DocumentProps = {
     value?: string;
@@ -36,7 +36,7 @@ const Document = ({ value, mediaType, previewSrc, onOpen }: DocumentProps) => {
                         aria-label={`Open ${value || "attachment"}`}
                     >
                         <Icon
-                            className="w-3 h-3 fill-n-4 transition-colors group-hover:fill-primary-1"
+                            className="size-3 stroke-n-4 transition-colors group-hover:stroke-primary-1"
                             name="zoom-in"
                         />
                     </button>

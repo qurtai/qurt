@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Field from "@/components/Field";
 
 type ForgotPasswordProps = {
@@ -16,7 +16,7 @@ const ForgotPassword = ({ onClick }: ForgotPasswordProps) => {
                 onClick={onClick}
             >
                 <Icon
-                    className="mr-4 transition-transform group-hover:-translate-x-1 dark:fill-n-1"
+                    className="mr-4 transition-transform group-hover:-translate-x-1 dark:stroke-n-1"
                     name="arrow-prev"
                 />
                 Reset your password

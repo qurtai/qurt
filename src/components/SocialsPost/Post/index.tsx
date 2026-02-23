@@ -1,5 +1,5 @@
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Details from "../Details";
 
 type PostProps = {

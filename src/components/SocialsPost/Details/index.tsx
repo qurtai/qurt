@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Preview from "../Preview";
 
 type DetailsProps = {
@@ -18,7 +18,7 @@ const Details = ({ images }: DetailsProps) => (
             </div>
             <button className="group shrink-0 w-6.5 h-6.5 ml-6 md:-mt-1">
                 <Icon
-                    className="w-5 h-5 fill-n-4 transition-colors group-hover:fill-accent-1"
+                    className="size-5 stroke-n-4 transition-colors group-hover:stroke-accent-1"
                     name="close"
                 />
             </button>
@@ -32,7 +32,7 @@ const Details = ({ images }: DetailsProps) => (
                     className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                     type="file"
                 />
-                <Icon className="dark:fill-n-1" name="image-up" />
+                <Icon className="dark:stroke-n-1" name="image-up" />
                 <div className="mt-2 caption1 font-semibold text-n-6 dark:text-n-3">
                     Upload media
                 </div>

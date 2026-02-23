@@ -1,7 +1,13 @@
 import { useContext, useMemo } from "react";
 import { AlemContext } from "@/App";
 import { DEFAULT_ENABLED_MODELS, PROVIDERS } from "@/constants/providers";
-import Select from "@/components/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ModelOption = {
   id: string;
@@ -71,17 +77,31 @@ const ModelSelector = ({
 
   return (
     <Select
-      items={items}
-      value={value}
-      onChange={handleChange}
-      small={compact}
-      up={direction === "up"}
-      noShadow
-      className="min-w-0"
-      classButton="caption2 border-0"
-      classOptions="border-0"
-      classOption="caption2"
-    />
+      value={value?.id}
+      onValueChange={(id) => {
+        const item = items.find((i) => i.id === id);
+        if (item) handleChange(item);
+      }}
+    >
+      <SelectTrigger
+        title={value?.title}
+        className={`border-0 shadow-none bg-n-1 dark:bg-n-6 h-9 px-3 rounded-md overflow-hidden [&>span]:truncate [&>span]:min-w-0 transition-colors hover:bg-accent hover:text-n-7 dark:hover:bg-accent dark:text-n-4 dark:hover:text-n-1 ${
+          compact ? "min-w-[8rem] max-w-[12rem]" : "min-w-[10rem] max-w-[16rem]"
+        }`}
+      >
+        <SelectValue placeholder="Model" />
+      </SelectTrigger>
+      <SelectContent
+        side={direction === "up" ? "top" : "bottom"}
+        className="min-w-[14rem]"
+      >
+        {items.map((item) => (
+          <SelectItem key={item.id} value={item.id} className="caption">
+            {item.title}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 

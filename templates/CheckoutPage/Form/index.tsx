@@ -1,6 +1,6 @@
 import { useState } from "react";
 import InputMask from "react-input-mask";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import RadioGroup from "./RadioGroup";
 import Foot from "./Foot";
 
@@ -62,7 +62,7 @@ const Form = ({}: FormProps) => {
                     <div className="mb-3 base2 text-n-5">Billing email</div>
                     <div className="relative">
                         <Icon
-                            className="absolute top-0 left-0 pointer-events-none fill-n-4/50"
+                            className="absolute top-0 left-0 pointer-events-none stroke-n-4/50"
                             name="email"
                         />
                         <input
@@ -81,7 +81,7 @@ const Form = ({}: FormProps) => {
                     <div className="flex md:flex-wrap">
                         <div className="relative grow md:w-full md:mb-4">
                             <Icon
-                                className="absolute top-0 left-0 pointer-events-none fill-n-4/50"
+                                className="absolute top-0 left-0 pointer-events-none stroke-n-4/50"
                                 name="credit-card"
                             />
                             <InputMask

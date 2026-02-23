@@ -1,6 +1,6 @@
 import Image from "@/components/Image";
 import Actions from "@/components/Actions";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Export from "@/components/Export";
 import Adjust from "@/components/Adjust";
 

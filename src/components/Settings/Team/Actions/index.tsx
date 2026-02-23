@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type ActionsProps = {
     className: string;
@@ -31,8 +31,8 @@ const Actions = ({ className }: ActionsProps) => {
                     <div onMouseLeave={close}>
                         <Menu.Button className="group/menu relative w-6 h-8 py-1">
                             <Icon
-                                className={`fill-n-4/50 rotate-90 transition-colors group-hover/menu:fill-n-7 dark:group-hover/menu:fill-n-3 ${
-                                    open && "!fill-primary-1"
+                                className={`stroke-n-4/50 rotate-90 transition-colors group-hover/menu:stroke-n-7 dark:group-hover/menu:stroke-n-3 ${
+                                    open && "!stroke-primary-1"
                                 }`}
                                 name="dots"
                             />
@@ -54,7 +54,7 @@ const Actions = ({ className }: ActionsProps) => {
                                                 onClick={item.onClick}
                                             >
                                                 <Icon
-                                                    className={`shrink-0 w-5 h-5 mr-3 !fill-n-4 transition-colors group-hover:fill-n-7 dark:fill-n-2`}
+                                                    className={`shrink-0 size-5 mr-3 !stroke-n-4 transition-colors group-hover:stroke-n-7 dark:stroke-n-2`}
                                                     name={item.icon}
                                                 />
                                                 {item.title}

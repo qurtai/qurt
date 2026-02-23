@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type ModalProps = {
     className?: string;
@@ -77,7 +77,7 @@ const Modal = ({
                             onClick={onClose}
                         >
                             <Icon
-                                className="fill-inherit transition-colors"
+                                className="stroke-current transition-colors"
                                 name="close"
                             />
                         </button>

@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type FootProps = {};
 
 const Foot = ({}: FootProps) => (
     <div className="">
         <div className="flex items-center mb-6 caption1 text-n-4/50">
-            <Icon className="w-4 h-4 mr-2 fill-[#0C923C]" name="lock" />
+            <Icon className="size-4 mr-2 stroke-[#0C923C]" name="lock" />
             Secured form with UI8 Banking
         </div>
         <div className="text-right">

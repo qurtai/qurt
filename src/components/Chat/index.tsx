@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import Icon from "@/components/Icon";
+import { useCheckpointStore } from "@/hooks/useCheckpointStore";
+import { Icon } from "@/utils/icons";
 import ModalShareChat from "@/components/ModalShareChat";
 import {
   Conversation,
@@ -12,22 +13,42 @@ import Actions from "./Actions";
 
 type ChatProps = {
   chatId: string;
-  chatListIds: string[];
+  chatGroupIds: string[];
   title: string;
   children: React.ReactNode;
   downloadMessages?: ConversationMessage[];
+  /** Checkpoint IDs from apply_file_patch in the last assistant message; when set, show Restore button. */
+  filePatchCheckpointIds?: string[];
+  /** Called when user clicks Restore to revert file changes to state before last user message. */
+  onRestoreFilePatch?: () => void | Promise<void>;
 };
 
 const Chat = ({
   chatId,
-  chatListIds,
+  chatGroupIds,
   title,
   children,
   downloadMessages = [],
+  filePatchCheckpointIds = [],
+  onRestoreFilePatch,
 }: ChatProps) => {
   const [favorite, setFavorite] = useState<boolean>(false);
   const [visibleModal, setVisibleModal] = useState<boolean>(false);
+  const [restoreState, setRestoreState] = useState<"idle" | "success" | "error">("idle");
+  const { isRestoring } = useCheckpointStore();
   const hasDownloadableMessages = downloadMessages.length > 0;
+  const hasFilePatchCheckpoints =
+    filePatchCheckpointIds.length > 0 && typeof onRestoreFilePatch === "function";
+
+  const handleRestoreFilePatch = useCallback(async () => {
+    if (!hasFilePatchCheckpoints) return;
+    try {
+      await onRestoreFilePatch?.();
+      setRestoreState("success");
+    } catch {
+      setRestoreState("error");
+    }
+  }, [hasFilePatchCheckpoints, onRestoreFilePatch]);
 
   const handleDownloadConversation = useCallback(() => {
     if (downloadMessages.length === 0) {
@@ -58,12 +79,26 @@ const Chat = ({
             <Icon
               className={`${
                 favorite
-                  ? "fill-accent-5"
-                  : "fill-n-4 transition-colors group-hover:fill-accent-5"
+                  ? "stroke-accent-5"
+                  : "stroke-n-4 transition-colors group-hover:stroke-accent-5"
               }`}
               name={favorite ? "star-fill" : "star"}
             />
           </button>
+          {hasFilePatchCheckpoints && (
+            <button
+              className="group w-8 h-8"
+              onClick={handleRestoreFilePatch}
+              title="Restore files to state before last message"
+              type="button"
+              disabled={isRestoring}
+            >
+              <Icon
+                className="stroke-n-4 transition-colors group-hover:stroke-primary-1"
+                name={restoreState === "success" ? "check" : "refresh"}
+              />
+            </button>
+          )}
           {hasDownloadableMessages && (
             <button
               className="group w-8 h-8"
@@ -72,12 +107,12 @@ const Chat = ({
               type="button"
             >
               <Icon
-                className="fill-n-4 transition-colors group-hover:fill-primary-1"
+                className="stroke-n-4 transition-colors group-hover:stroke-primary-1"
                 name="download"
               />
             </button>
           )}
-          <Actions chatId={chatId} chatListIds={chatListIds} />
+          <Actions chatId={chatId} chatGroupIds={chatGroupIds} />
         </div>
       </div>
       <Conversation className="relative z-2 grow">

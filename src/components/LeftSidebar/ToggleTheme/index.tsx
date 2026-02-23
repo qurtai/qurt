@@ -1,6 +1,6 @@
 import { useColorMode } from "@chakra-ui/react";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type ToggleThemeProps = {
     visible?: boolean;
@@ -50,9 +50,9 @@ const ToggleTheme = ({ visible }: ToggleThemeProps) => {
                     onClick={item.onClick}
                 >
                     <Icon
-                        className={`fill-n-4 transition-colors group-hover:fill-n-1 ${
+                        className={`stroke-n-4 transition-colors group-hover:stroke-n-1 ${
                             !visible && "mr-3"
-                        } ${item.active && !visible && "fill-n-1"}`}
+                        } ${item.active && !visible && "stroke-n-1"}`}
                         name={item.icon}
                     />
                     {!visible && item.title}

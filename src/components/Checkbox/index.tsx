@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type CheckboxProps = {
     className?: string;
@@ -33,7 +33,7 @@ const Checkbox = ({
             }`}
         >
             <Icon
-                className={`w-4.5 h-4.5 fill-n-1 transition-opacity ${
+                className={`size-4.5 stroke-n-1 transition-opacity ${
                     value ? "opacity-100" : "opacity-0"
                 }`}
                 name="check"

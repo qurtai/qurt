@@ -1,5 +1,5 @@
 import { Menu, Transition } from "@headlessui/react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type ActionsProps = {
     className?: string;
@@ -45,7 +45,7 @@ const Actions = ({
                                             onClick={close}
                                         >
                                             <Icon
-                                                className="fill-n-4 transition-colors group-hover:fill-accent-1"
+                                                className="stroke-n-4 transition-colors group-hover:stroke-accent-1"
                                                 name="close"
                                             />
                                         </button>

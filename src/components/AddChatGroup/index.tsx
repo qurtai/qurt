@@ -30,7 +30,7 @@ const colors = [
     },
 ];
 
-type AddChatListProps = {
+type AddChatGroupProps = {
     onCancel?: () => void;
     onAdd?: (input: {
         title: string;
@@ -39,7 +39,7 @@ type AddChatListProps = {
     }) => Promise<void>;
 };
 
-const AddChatList = ({ onCancel, onAdd }: AddChatListProps) => {
+const AddChatGroup = ({ onCancel, onAdd }: AddChatGroupProps) => {
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [color, setColor] = useState<any>(colors[1]);
@@ -64,7 +64,7 @@ const AddChatList = ({ onCancel, onAdd }: AddChatListProps) => {
             setErrorMessage(
                 error instanceof Error
                     ? error.message
-                    : "Failed to create chat list."
+                    : "Failed to create chat group."
             );
         } finally {
             setIsSaving(false);
@@ -73,7 +73,7 @@ const AddChatList = ({ onCancel, onAdd }: AddChatListProps) => {
 
     return (
         <div className="p-12 lg:px-8 md:pt-6 md:px-5 md:pb-6">
-            <div className="mb-8 h4">Add chat list</div>
+            <div className="mb-8 h4">Add chat group</div>
             <div className="relative z-10 flex mb-8 md:block">
                 <Field
                     className="grow mr-3 md:mr-0 md:mb-3"
@@ -95,7 +95,7 @@ const AddChatList = ({ onCancel, onAdd }: AddChatListProps) => {
             <Field
                 className="mb-8"
                 label="Description"
-                placeholder="What chats belong in this list?"
+                placeholder="What chats belong in this group?"
                 icon="chat-1"
                 value={description}
                 onChange={(e: any) => setDescription(e.target.value)}
@@ -110,7 +110,7 @@ const AddChatList = ({ onCancel, onAdd }: AddChatListProps) => {
                     onClick={handleAdd}
                     disabled={!name.trim() || isSaving}
                 >
-                    {isSaving ? "Adding..." : "Add list"}
+                    {isSaving ? "Adding..." : "Add group"}
                 </button>
             </div>
             {errorMessage && (
@@ -122,4 +122,4 @@ const AddChatList = ({ onCancel, onAdd }: AddChatListProps) => {
     );
 };
 
-export default AddChatList;
+export default AddChatGroup;

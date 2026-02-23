@@ -8,6 +8,14 @@ import {
   runTerminal,
   type TerminalRunRequest,
 } from "./terminal-runner";
+import {
+  runFilePatch,
+  type FilePatchRequest,
+} from "./file-patch-runner";
+import {
+  restoreCheckpoint,
+  restoreCheckpoints,
+} from "./file-patch-checkpoints";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -141,6 +149,52 @@ function setupIpc() {
         root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
       }
       return runTerminal({ request, workspaceRoot: root });
+    }
+  );
+
+  ipcMain.handle(
+    "apply-file-patch",
+    async (
+      _event,
+      request: FilePatchRequest
+    ): Promise<import("./file-patch-runner").FilePatchResult> => {
+      const s = store.get("settings", {}) as Record<string, unknown> & {
+        terminalWorkspaceRoot?: string;
+      };
+      let root: string;
+      const override = request.workspaceOverride?.trim();
+      if (override) {
+        try {
+          const resolved = path.resolve(override);
+          if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+            root = resolved;
+          } else {
+            root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
+          }
+        } catch {
+          root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
+        }
+      } else {
+        root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
+      }
+      return runFilePatch({ request, workspaceRoot: root });
+    }
+  );
+
+  ipcMain.handle(
+    "restore-file-patch-checkpoint",
+    async (_event, checkpointId: string) => {
+      return restoreCheckpoint(checkpointId);
+    }
+  );
+
+  ipcMain.handle(
+    "restore-file-patch-checkpoints",
+    async (_event, checkpointIds: unknown) => {
+      const ids = Array.isArray(checkpointIds)
+        ? checkpointIds.filter((id): id is string => typeof id === "string") 
+        : [];
+      return restoreCheckpoints(ids);
     }
   );
 

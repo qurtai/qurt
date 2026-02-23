@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type MenuType = {
     title: string;
@@ -36,7 +36,7 @@ const Menu = ({ className, items }: MenuProps) => (
                 </div>
                 {item.title}
                 <Icon
-                    className="ml-auto fill-n-4 transition-colors group-hover:fill-n-7 dark:group-hover:fill-n-4"
+                    className="ml-auto stroke-n-4 transition-colors group-hover:stroke-n-7 dark:group-hover:stroke-n-4"
                     name="arrow-next"
                 />
             </Link>

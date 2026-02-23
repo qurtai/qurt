@@ -3,7 +3,7 @@ import AudioPlayer from "@/components/AudioPlayer";
 import Actions from "@/components/Actions";
 import Export from "@/components/Export";
 import Select from "@/components/Select";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 const languages = [
     {

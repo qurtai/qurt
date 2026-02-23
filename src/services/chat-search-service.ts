@@ -1,4 +1,5 @@
-import { chatStore, type ChatHistoryMessage, type ChatSession, type ChatStore } from "../stores/chat-store";
+import { chatStore, type ChatSession, type ChatStore } from "../stores/chat-store";
+import type { UIMessage } from "ai";
 
 export type SearchDateFilter = "all" | "today" | "lastWeek" | "last30Days";
 
@@ -78,14 +79,22 @@ function isInDateRange(session: ChatSession, dateFilter: SearchDateFilter): bool
   return updatedMs >= thresholdMs;
 }
 
-function getMatchingMessages(messages: ChatHistoryMessage[], query: string): ChatHistoryMessage[] {
+function getTextFromParts(parts: UIMessage["parts"]): string {
+  return parts
+    .filter((p): p is { type: "text"; text: string } => p.type === "text")
+    .map((p) => p.text)
+    .join("")
+    .trim();
+}
+
+function getMatchingMessages(messages: UIMessage[], query: string): UIMessage[] {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) {
     return [];
   }
 
   return messages.filter((message) =>
-    message.content.toLowerCase().includes(normalizedQuery),
+    getTextFromParts(message.parts).toLowerCase().includes(normalizedQuery),
   );
 }
 
@@ -120,7 +129,7 @@ export class LocalChatSearchService implements ChatSearchService {
         results.push({
           id: `${session.id}:${message.id}`,
           title: session.title,
-          content: message.content,
+          content: getTextFromParts(message.parts),
           time: formatRelativeTime(session.updatedAt),
           url: `/chat/${session.id}`,
         });

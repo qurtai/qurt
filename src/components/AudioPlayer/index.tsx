@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Image from "@/components/Image";
 
 type AudioPlayerProps = {
@@ -26,7 +26,7 @@ const AudioPlayer = ({ edit, onSave }: AudioPlayerProps) => {
                         onClick={() => setActive(!active)}
                     >
                         <Icon
-                            className="w-3 h-3 fill-n-1 dark:fill-n-7"
+                            className="size-3 stroke-n-1 dark:stroke-n-7"
                             name={active ? "pause" : "play"}
                         />
                     </button>

@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type DetailsProps = {};
 
@@ -6,7 +6,7 @@ const Details = ({}: DetailsProps) => (
     <div className="flex items-center p-5 md:block">
         <div className="flex items-center mr-auto">
             <div className="flex justify-center items-center shrink-0 w-15 h-15 rounded-xl bg-[#52BA69]/20">
-                <Icon className="w-8 h-8 fill-[#52BA69]" name="codepen" />
+                <Icon className="size-8 stroke-[#52BA69]" name="codepen" />
             </div>
             <div className="grow pl-4">
                 <div className="mb-1 h6">Very good!</div>
@@ -41,7 +41,7 @@ const Details = ({}: DetailsProps) => (
         </div>
         <button className="btn-dark 2xl:w-12 2xl:p-0 2xl:text-0 md:w-full md:mt-4 md:text-[0.875rem]">
             <span>Download</span>
-            <Icon className="2xl:!m-0 md:!ml-3" name="download-fill" />
+            <Icon className="2xl:!m-0 md:!ml-3 stroke-n-4" name="download-fill" />
         </button>
     </div>
 );

@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Loading from "./Loading";
 import Actions from "./Actions";
 
@@ -19,7 +19,7 @@ const Answer = ({ children, loading, showThinkingMessages, time }: AnswerProps) 
                 <div className="mt-2 pl-5">
                     <button className="group flex items-center px-2 py-0.5 bg-n-3 rounded-md caption1 txt-n-6 transition-colors hover:text-primary-1 dark:bg-n-7 dark:text-n-3 dark:hover:text-primary-1">
                         <Icon
-                            className="w-4 h-4 mr-2 transition-colors group-hover:fill-primary-1 dark:fill-n-3"
+                            className="size-4 mr-2 transition-colors group-hover:stroke-primary-1 dark:stroke-n-3"
                             name="pause-circle"
                         />
                         Pause generating

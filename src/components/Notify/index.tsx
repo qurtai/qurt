@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type NotifyProps = {
     className?: string;
@@ -18,12 +18,12 @@ const Notify = ({
     >
         {iconCheck && (
             <div className="flex justify-center items-center shrink-0 w-10 h-10 rounded-full bg-primary-2">
-                <Icon className="fill-n-7" name="check-thin" />
+                <Icon className="stroke-n-7" name="check-thin" />
             </div>
         )}
         {iconDelete && (
             <div className="flex justify-center items-center shrink-0 w-10 h-10 rounded-full bg-accent-1">
-                <Icon className="fill-n-1" name="trash" />
+                <Icon className="stroke-n-1" name="trash" />
             </div>
         )}
         {children}

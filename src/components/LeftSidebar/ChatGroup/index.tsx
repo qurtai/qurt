@@ -1,36 +1,36 @@
 import { useState } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
-import AddChatList from "@/components/AddChatList";
+import AddChatGroup from "@/components/AddChatGroup";
 
-type ChatListType = {
+type ChatGroupType = {
     id: string;
     title: string;
     counter: number;
     color: string;
 };
 
-type ChatListProps = {
+type ChatGroupProps = {
     visible?: boolean;
-    items: ChatListType[];
-    activeListId?: string;
-    onSelectList: (listId: string) => void;
-    onCreateList: (input: {
+    items: ChatGroupType[];
+    activeGroupId?: string;
+    onSelectGroup: (groupId: string) => void;
+    onCreateGroup: (input: {
         title: string;
         description?: string;
         color?: string;
     }) => Promise<void>;
 };
 
-const ChatList = ({
+const ChatGroup = ({
     visible,
     items,
-    activeListId,
-    onSelectList,
-    onCreateList,
-}: ChatListProps) => {
+    activeGroupId,
+    onSelectGroup,
+    onCreateGroup,
+}: ChatGroupProps) => {
     const [visibleModal, setVisibleModal] = useState<boolean>(false);
 
     return (
@@ -43,10 +43,10 @@ const ChatList = ({
                         }`}
                     >
                         <Icon
-                            className="fill-n-4 transition-transform ui-open:rotate-180"
+                            className="stroke-n-4 transition-transform ui-open:rotate-180"
                             name="arrow-down"
                         />
-                        {!visible && <div className="ml-5">Chat list</div>}
+                        {!visible && <div className="ml-5">Chat groups</div>}
                     </Disclosure.Button>
                     <Transition
                         enter="transition duration-100 ease-out"
@@ -64,12 +64,12 @@ const ChatList = ({
                                         `flex items-center w-full h-12 rounded-lg text-n-3/75 base2 font-semibold transition-colors hover:text-n-1 ${
                                             visible ? "px-3" : "px-5"
                                         } ${
-                                            activeListId === item.id &&
+                                            activeGroupId === item.id &&
                                             "text-n-1 bg-gradient-to-l from-[#323337] to-[rgba(80,62,110,0.29)]"
                                         }`
                                     )}
                                     key={item.id}
-                                    onClick={() => onSelectList(item.id)}
+                                    onClick={() => onSelectGroup(item.id)}
                                 >
                                     <div className="flex justify-center items-center w-6 h-6">
                                         <div
@@ -101,10 +101,10 @@ const ChatList = ({
                     onClick={() => setVisibleModal(true)}
                 >
                     <Icon
-                        className="fill-n-4 transition-colors group-hover:fill-n-3"
+                        className="stroke-n-4 transition-colors group-hover:stroke-n-3"
                         name="plus-circle"
                     />
-                    {!visible && <div className="ml-5">New list</div>}
+                    {!visible && <div className="ml-5">New group</div>}
                 </button>
             </div>
             <Modal
@@ -114,10 +114,10 @@ const ChatList = ({
                 visible={visibleModal}
                 onClose={() => setVisibleModal(false)}
             >
-                <AddChatList
+                <AddChatGroup
                     onCancel={() => setVisibleModal(false)}
                     onAdd={async (input) => {
-                        await onCreateList(input);
+                        await onCreateGroup(input);
                         setVisibleModal(false);
                     }}
                 />
@@ -126,4 +126,4 @@ const ChatList = ({
     );
 };
 
-export default ChatList;
+export default ChatGroup;

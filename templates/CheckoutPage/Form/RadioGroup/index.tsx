@@ -1,5 +1,5 @@
 import { RadioGroup } from "@headlessui/react";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type RadioType = {
     id: string;
@@ -33,7 +33,7 @@ const Radio = ({ items, value, setValue }: RadioProps) => {
                             Pay {item.title}
                         </div>
                         <Icon
-                            className="ml-auto fill-primary-1 opacity-0 transition-opacity ui-checked:opacity-100"
+                            className="ml-auto stroke-primary-1 opacity-0 transition-opacity ui-checked:opacity-100"
                             name="check-thin"
                         />
                     </div>

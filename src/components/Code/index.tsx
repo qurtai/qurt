@@ -3,7 +3,7 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { srcery } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type CodeType = {
     id: string;

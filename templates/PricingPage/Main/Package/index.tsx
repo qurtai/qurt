@@ -1,6 +1,6 @@
 import { twMerge } from "tailwind-merge";
 import { Link } from "react-router-dom";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type PackageProps = {
     plan?: boolean;
@@ -48,7 +48,7 @@ const Package = ({ plan, item }: PackageProps) => (
                     <div className="flex base2" key={index}>
                         <Icon
                             className={twMerge(
-                                `mr-3 fill-n-4/50 ${item.popular && "fill-n-4"}`
+                                `mr-3 stroke-n-4/50 ${item.popular && "stroke-n-4"}`
                             )}
                             name="check-circle"
                         />

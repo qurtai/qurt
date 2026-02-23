@@ -1,5 +1,5 @@
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 import { exportImage, exportAudio } from "@/constants/export";
 
@@ -35,7 +35,7 @@ const Export = ({ typeImage }: ExportProps) => {
                                 )}
                                 {x.icon && (
                                     <Icon
-                                        className="dark:fill-n-1"
+                                        className="dark:stroke-n-1"
                                         name={x.icon}
                                     />
                                 )}
@@ -56,7 +56,7 @@ const Export = ({ typeImage }: ExportProps) => {
             ))}
             <button className="flex items-center w-full px-3 py-2 rounded-lg transition-colors hover:bg-n-2 dark:hover:bg-n-6">
                 <div className="relative flex justify-center items-center shrink-0 w-10 h-10 mr-4 rounded-full">
-                    <Icon className="dark:fill-n-1" name="dots" />
+                    <Icon className="dark:stroke-n-1" name="dots" />
                 </div>
                 <div className="base2 font-semibold">More</div>
             </button>

@@ -1,5 +1,5 @@
 import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 type PreviewProps = {
     item: any;
@@ -19,7 +19,7 @@ const Preview = ({ item }: PreviewProps) => (
             name="close-fat"
         >
             <Icon
-                className="w-4 h-4 fill-n-4 transition-colors group-hover:fill-n-1"
+                className="size-4 stroke-n-4 transition-colors group-hover:stroke-n-1"
                 name="close-fat"
             />
         </button>

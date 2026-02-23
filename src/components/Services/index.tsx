@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 
 import { navigation } from "@/constants/navigation";
 
@@ -29,7 +29,7 @@ const Services = ({}: ServicesProps) => (
                         ></div>
                         <Icon
                             className="relative z-1"
-                            fill={item.color}
+                            stroke={item.color}
                             name={item.icon}
                         />
                     </div>

@@ -2,7 +2,7 @@ import { Tab } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Faq from "./Faq";
 import Updates from "./Updates";
 import {
@@ -45,7 +45,7 @@ const UpdatesAndFaqPage = () => {
           className="hidden absolute top-6 right-6 w-10 h-10 border-2 border-n-4/25 rounded-full text-0 transition-colors hover:border-transparent hover:bg-n-4/25 md:block"
           onClick={() => navigate(-1)}
         >
-          <Icon className="fill-n-4" name="close" />
+          <Icon className="stroke-n-4" name="close" />
         </button>
         <div className="max-w-[58.5rem] mx-auto">
           <div className="mb-4 h2 md:pr-16 md:h3">Updates & FAQ</div>

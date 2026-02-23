@@ -1,4 +1,4 @@
-export const chatList = [
+export const chatGroup = [
     {
         id: "0",
         title: "Welcome",

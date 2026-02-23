@@ -1,20 +1,15 @@
-import type { AiChainStep, AiChatMessage } from "../services/ai-service";
-import type { ChatAttachment } from "../types/chat-attachment";
-import { ARCHIVED_CHAT_LIST_ID } from "./chat-list-store";
+import type { UIMessage } from "ai";
+import { ARCHIVED_CHAT_GROUP_ID } from "./chat-group-store";
 
-const STORAGE_KEY = "alem.chat-history.v1";
+const STORAGE_KEY = "alem.chat-history.v2";
 export const CHAT_HISTORY_UPDATED_EVENT = "alem:chat-history-updated";
 export const DEFAULT_CHAT_TITLE = "New chat";
-
-export interface ChatHistoryMessage extends AiChatMessage {
-  id: string;
-}
 
 export interface ChatSession {
   id: string;
   title: string;
-  messages: ChatHistoryMessage[];
-  chatListIds: string[];
+  messages: UIMessage[];
+  chatGroupIds: string[];
   isArchived: boolean;
   /** Optional workspace root for terminal tool; one per chat. */
   terminalWorkspacePath?: string;
@@ -33,7 +28,7 @@ export interface ChatStore {
   createChat(
     title: string,
     options?: {
-      chatListIds?: string[];
+      chatGroupIds?: string[];
       isArchived?: boolean;
       terminalWorkspacePath?: string;
     },
@@ -42,8 +37,8 @@ export interface ChatStore {
     chatId: string,
     update: {
       title?: string;
-      messages?: ChatHistoryMessage[];
-      chatListIds?: string[];
+      messages?: UIMessage[];
+      chatGroupIds?: string[];
       isArchived?: boolean;
       terminalWorkspacePath?: string;
     },
@@ -89,33 +84,46 @@ function createChatId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function normalizeChatListIds(value: unknown): string[] {
+function normalizeChatGroupIds(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  const listIds = value
-    .filter((listId): listId is string => typeof listId === "string")
-    .map((listId) => listId.trim())
-    .filter((listId) => listId.length > 0);
+  const groupIds = value
+    .filter((groupId): groupId is string => typeof groupId === "string")
+    .map((groupId) => groupId.trim())
+    .filter((groupId) => groupId.length > 0);
 
-  return [...new Set(listIds)];
+  return [...new Set(groupIds)];
 }
 
-function syncArchiveList(
-  chatListIds: string[],
+function syncArchiveGroup(
+  chatGroupIds: string[],
   isArchived: boolean,
 ): string[] {
-  const next = new Set(chatListIds);
+  const next = new Set(chatGroupIds);
 
   if (isArchived) {
-    next.add(ARCHIVED_CHAT_LIST_ID);
+    next.add(ARCHIVED_CHAT_GROUP_ID);
     return [...next];
   }
 
-  next.delete(ARCHIVED_CHAT_LIST_ID);
+  next.delete(ARCHIVED_CHAT_GROUP_ID);
 
   return [...next];
+}
+
+function isValidUIMessage(value: unknown): value is UIMessage {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const m = value as Record<string, unknown>;
+  return (
+    typeof m.id === "string" &&
+    (m.role === "system" || m.role === "user" || m.role === "assistant") &&
+    Array.isArray(m.parts)
+  );
 }
 
 function normalizeSessions(value: unknown): ChatSession[] {
@@ -140,48 +148,15 @@ function normalizeSessions(value: unknown): ChatSession[] {
         return null;
       }
 
-      const messages: ChatHistoryMessage[] = [];
-      for (const message of candidate.messages) {
-        if (typeof message !== "object" || message === null) {
-          continue;
-        }
+      const messages: UIMessage[] = candidate.messages.filter(
+        isValidUIMessage,
+      ) as UIMessage[];
 
-        const m = message as Partial<ChatHistoryMessage>;
-        if (
-          typeof m.id !== "string" ||
-          (m.role !== "user" && m.role !== "assistant") ||
-          typeof m.content !== "string"
-        ) {
-          continue;
-        }
-
-        const normalizedMessage: ChatHistoryMessage = {
-          id: m.id,
-          role: m.role,
-          content: m.content,
-        };
-
-        if (typeof m.reasoning === "string" && m.reasoning.trim()) {
-          normalizedMessage.reasoning = m.reasoning;
-        }
-
-        const chainSteps = normalizeChainSteps(m.chainSteps);
-        if (chainSteps.length > 0) {
-          normalizedMessage.chainSteps = chainSteps;
-        }
-
-        const attachments = normalizeAttachments(m.attachments);
-        if (attachments) {
-          normalizedMessage.attachments = attachments;
-        }
-
-        messages.push(normalizedMessage);
-      }
-
-      const normalizedChatListIds = normalizeChatListIds(candidate.chatListIds);
+      const rawIds = (candidate as Record<string, unknown>).chatGroupIds ?? (candidate as Record<string, unknown>).chatListIds;
+      const normalizedChatGroupIds = normalizeChatGroupIds(rawIds);
       const isArchived =
         candidate.isArchived === true ||
-        normalizedChatListIds.includes(ARCHIVED_CHAT_LIST_ID);
+        normalizedChatGroupIds.includes(ARCHIVED_CHAT_GROUP_ID);
 
       const terminalWorkspacePath =
         typeof candidate.terminalWorkspacePath === "string" &&
@@ -193,7 +168,7 @@ function normalizeSessions(value: unknown): ChatSession[] {
         id: candidate.id,
         title: candidate.title || DEFAULT_CHAT_TITLE,
         messages,
-        chatListIds: syncArchiveList(normalizedChatListIds, isArchived),
+        chatGroupIds: syncArchiveGroup(normalizedChatGroupIds, isArchived),
         isArchived,
         createdAt: candidate.createdAt,
         updatedAt: candidate.updatedAt,
@@ -204,73 +179,6 @@ function normalizeSessions(value: unknown): ChatSession[] {
       return session;
     })
     .filter((session): session is ChatSession => session !== null);
-}
-
-function normalizeAttachments(value: unknown): ChatAttachment[] | undefined {
-  if (!Array.isArray(value) || value.length === 0) {
-    return undefined;
-  }
-
-  const attachments: ChatAttachment[] = [];
-  for (const item of value) {
-    if (typeof item !== "object" || item === null) {
-      continue;
-    }
-
-    const attachment = item as Partial<ChatAttachment>;
-    if (
-      typeof attachment.id !== "string" ||
-      typeof attachment.name !== "string" ||
-      typeof attachment.mediaType !== "string" ||
-      typeof attachment.size !== "number"
-    ) {
-      continue;
-    }
-
-    const normalizedAttachment: ChatAttachment = {
-      id: attachment.id,
-      name: attachment.name,
-      mediaType: attachment.mediaType,
-      size: attachment.size,
-    };
-
-    if (typeof attachment.createdAt === "string") {
-      normalizedAttachment.createdAt = attachment.createdAt;
-    }
-
-    attachments.push(normalizedAttachment);
-  }
-
-  return attachments.length > 0 ? attachments : undefined;
-}
-
-function normalizeChainSteps(value: unknown): AiChainStep[] {
-  if (!Array.isArray(value) || value.length === 0) {
-    return [];
-  }
-
-  const steps: AiChainStep[] = [];
-  for (const item of value) {
-    if (typeof item !== "object" || item === null) {
-      continue;
-    }
-    const part = item as Record<string, unknown>;
-    if (part.type === "reasoning" && typeof part.text === "string" && part.text.trim()) {
-      steps.push({ type: "reasoning", text: part.text.trim() });
-    } else if (
-      part.type === "tool" &&
-      typeof part.toolName === "string"
-    ) {
-      steps.push({
-        type: "tool",
-        toolName: part.toolName,
-        input: part.input ?? {},
-        output: part.output,
-        errorText: typeof part.errorText === "string" ? part.errorText : undefined,
-      });
-    }
-  }
-  return steps;
 }
 
 function emitChatHistoryUpdated(): void {
@@ -298,14 +206,14 @@ export class BrowserChatStore implements ChatStore {
   async createChat(
     title: string,
     options?: {
-      chatListIds?: string[];
+      chatGroupIds?: string[];
       isArchived?: boolean;
       terminalWorkspacePath?: string;
     },
   ): Promise<ChatSession> {
     const now = new Date().toISOString();
-    const requestedListIds = normalizeChatListIds(options?.chatListIds);
-    const isArchived = options?.isArchived ?? requestedListIds.includes(ARCHIVED_CHAT_LIST_ID);
+    const requestedGroupIds = normalizeChatGroupIds(options?.chatGroupIds);
+    const isArchived = options?.isArchived ?? requestedGroupIds.includes(ARCHIVED_CHAT_GROUP_ID);
     const terminalWorkspacePath =
       typeof options?.terminalWorkspacePath === "string" &&
       options.terminalWorkspacePath.trim()
@@ -315,7 +223,7 @@ export class BrowserChatStore implements ChatStore {
       id: createChatId(),
       title: title.trim() || DEFAULT_CHAT_TITLE,
       messages: [],
-      chatListIds: syncArchiveList(requestedListIds, isArchived),
+      chatGroupIds: syncArchiveGroup(requestedGroupIds, isArchived),
       isArchived,
       terminalWorkspacePath,
       createdAt: now,
@@ -332,8 +240,8 @@ export class BrowserChatStore implements ChatStore {
     chatId: string,
     update: {
       title?: string;
-      messages?: ChatHistoryMessage[];
-      chatListIds?: string[];
+      messages?: UIMessage[];
+      chatGroupIds?: string[];
       isArchived?: boolean;
       terminalWorkspacePath?: string;
     },
@@ -347,7 +255,7 @@ export class BrowserChatStore implements ChatStore {
 
     const current = sessions[index];
     const nextIsArchived = update.isArchived ?? current.isArchived;
-    const requestedListIds = normalizeChatListIds(update.chatListIds ?? current.chatListIds);
+    const requestedGroupIds = normalizeChatGroupIds(update.chatGroupIds ?? current.chatGroupIds);
     const nextWorkspacePath =
       update.terminalWorkspacePath !== undefined
         ? (typeof update.terminalWorkspacePath === "string" &&
@@ -359,7 +267,7 @@ export class BrowserChatStore implements ChatStore {
       ...current,
       title: update.title ?? current.title,
       messages: update.messages ?? current.messages,
-      chatListIds: syncArchiveList(requestedListIds, nextIsArchived),
+      chatGroupIds: syncArchiveGroup(requestedGroupIds, nextIsArchived),
       isArchived: nextIsArchived,
       terminalWorkspacePath: nextWorkspacePath,
       updatedAt: new Date().toISOString(),
@@ -389,8 +297,8 @@ export class BrowserChatStore implements ChatStore {
       didChange = true;
       return {
         ...session,
-        chatListIds: syncArchiveList(
-          normalizeChatListIds(session.chatListIds),
+        chatGroupIds: syncArchiveGroup(
+          normalizeChatGroupIds(session.chatGroupIds),
           true,
         ),
         isArchived: true,

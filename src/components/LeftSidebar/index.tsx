@@ -3,13 +3,13 @@ import { Tab } from "@headlessui/react";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
 import Search from "@/components/Search";
 import Settings from "@/components/Settings";
 import Notifications from "@/components/LeftSidebar/Notifications";
 import Navigation from "./Navigation";
-import ChatList from "./ChatList";
+import ChatGroup from "./ChatGroup";
 import ToggleTheme from "./ToggleTheme";
 import Faq from "@/pages/UpdatesAndFaqPage/Faq";
 import Updates from "@/pages/UpdatesAndFaqPage/Updates";
@@ -18,9 +18,9 @@ import { settings } from "@/constants/settings";
 import { notifications } from "@/mocks/notifications";
 import { twMerge } from "tailwind-merge";
 import {
-    CHAT_LISTS_UPDATED_EVENT,
-    chatListService,
-} from "@/services/chat-list-service";
+    CHAT_GROUPS_UPDATED_EVENT,
+    chatGroupService,
+} from "@/services/chat-group-service";
 import {
     CHAT_HISTORY_UPDATED_EVENT,
     chatService,
@@ -51,9 +51,11 @@ const LeftSidebar = ({
     const [visibleSearch, setVisibleSearch] = useState<boolean>(false);
     const [visibleSettings, setVisibleSettings] = useState<boolean>(false);
     const [visibleUpdatesFaq, setVisibleUpdatesFaq] = useState<boolean>(false);
+    const [visibleNotifications, setVisibleNotifications] =
+        useState<boolean>(false);
     const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
     const [updateItems, setUpdateItems] = useState<UpdateItem[]>([]);
-    const [chatListItems, setChatListItems] = useState<
+    const [chatGroupItems, setChatGroupItems] = useState<
         {
             id: string;
             title: string;
@@ -62,7 +64,7 @@ const LeftSidebar = ({
         }[]
     >([]);
 
-    const activeListId =
+    const activeGroupId =
         new URLSearchParams(location.search).get("list")?.trim() || "";
 
     useEffect(() => {
@@ -72,42 +74,42 @@ const LeftSidebar = ({
         };
     }, []);
 
-    const loadChatLists = useCallback(async () => {
-        const [lists, counts] = await Promise.all([
-            chatListService.listChatLists(),
-            chatService.listChatCountsByList(),
+    const loadChatGroups = useCallback(async () => {
+        const [groups, counts] = await Promise.all([
+            chatGroupService.listChatGroups(),
+            chatService.listChatCountsByGroup(),
         ]);
 
-        setChatListItems(
-            lists.map((list) => ({
-                id: list.id,
-                title: list.title,
-                color: list.color,
-                counter: counts[list.id] ?? 0,
+        setChatGroupItems(
+            groups.map((group) => ({
+                id: group.id,
+                title: group.title,
+                color: group.color,
+                counter: counts[group.id] ?? 0,
             }))
         );
     }, []);
 
     useEffect(() => {
-        const handleListsUpdated = () => {
-            void loadChatLists();
+        const handleGroupsUpdated = () => {
+            void loadChatGroups();
         };
 
-        void loadChatLists();
-        window.addEventListener(CHAT_LISTS_UPDATED_EVENT, handleListsUpdated);
-        window.addEventListener(CHAT_HISTORY_UPDATED_EVENT, handleListsUpdated);
+        void loadChatGroups();
+        window.addEventListener(CHAT_GROUPS_UPDATED_EVENT, handleGroupsUpdated);
+        window.addEventListener(CHAT_HISTORY_UPDATED_EVENT, handleGroupsUpdated);
 
         return () => {
             window.removeEventListener(
-                CHAT_LISTS_UPDATED_EVENT,
-                handleListsUpdated
+                CHAT_GROUPS_UPDATED_EVENT,
+                handleGroupsUpdated
             );
             window.removeEventListener(
                 CHAT_HISTORY_UPDATED_EVENT,
-                handleListsUpdated
+                handleGroupsUpdated
             );
         };
-    }, [loadChatLists]);
+    }, [loadChatGroups]);
 
     useEffect(() => {
         let active = true;
@@ -158,9 +160,12 @@ const LeftSidebar = ({
             color: "fill-accent-1",
             onClick: () => setVisibleUpdatesFaq(true),
         },
-    ];
-
-    const settingsNavigation = [
+        {
+            title: "Notifications",
+            icon: "notification",
+            color: "fill-accent-1",
+            onClick: () => setVisibleNotifications(true),
+        },
         {
             title: "Settings",
             icon: "settings",
@@ -169,13 +174,15 @@ const LeftSidebar = ({
         },
     ];
 
+    const settingsNavigation = navigation;
+
     const handleClick = () => {
         setValue(!value);
         smallSidebar && value ? disablePageScroll() : enablePageScroll();
     };
 
-    const handleSelectChatList = (listId: string) => {
-        const listQuery = `?list=${encodeURIComponent(listId)}`;
+    const handleSelectChatGroup = (groupId: string) => {
+        const listQuery = `?list=${encodeURIComponent(groupId)}`;
         navigate(`/${listQuery}`);
     };
 
@@ -201,21 +208,21 @@ const LeftSidebar = ({
                         onClick={handleClick}
                     >
                         <Icon
-                            className="fill-n-4 transition-colors group-hover:fill-n-3"
+                            className="stroke-n-4 transition-colors group-hover:stroke-n-3"
                             name={value ? "toggle-on" : "toggle-off"}
                         />
                     </button>
                 </div>
                 <div className="grow overflow-y-auto scroll-smooth scrollbar-none">
                     <Navigation visible={value} items={chatsNavigation} />
-                    <ChatList
+                    <ChatGroup
                         visible={value}
-                        items={chatListItems}
-                        activeListId={activeListId}
-                        onSelectList={handleSelectChatList}
-                        onCreateList={async (input) => {
-                            await chatListService.createChatList(input);
-                            await loadChatLists();
+                        items={chatGroupItems}
+                        activeGroupId={activeGroupId}
+                        onSelectGroup={handleSelectChatGroup}
+                        onCreateGroup={async (input) => {
+                            await chatGroupService.createChatGroup(input);
+                            await loadChatGroups();
                         }}
                     />
                     <div
@@ -223,19 +230,12 @@ const LeftSidebar = ({
                             value ? "-mx-4 md:mx-0" : "-mx-2 md:mx-0"
                         }`}
                     ></div>
-                    <Navigation visible={value} items={navigation} />
-                    <div className={value ? "px-2" : ""}>
-                        <Notifications
-                            items={notifications}
-                            className="w-full"
-                            buttonClassName={`w-full h-12 rounded-lg transition-colors hover:bg-n-6 ${
-                                value ? "justify-center px-3" : "px-5"
-                            }`}
-                            label={!value ? "Notifications" : undefined}
-                            labelClassName="ml-5"
-                        />
-                    </div>
                     <Navigation visible={value} items={settingsNavigation} />
+                    <Notifications
+                        items={notifications}
+                        visible={visibleNotifications}
+                        onClose={() => setVisibleNotifications(false)}
+                    />
                 </div>
                 <div className="absolute left-0 bottom-0 right-0 pb-6 px-4 bg-n-7 before:absolute before:left-0 before:right-0 before:bottom-full before:h-10 before:bg-gradient-to-t before:from-[#131617] before:to-[rgba(19,22,23,0)] before:pointer-events-none md:px-3">
                     <ToggleTheme visible={value} />

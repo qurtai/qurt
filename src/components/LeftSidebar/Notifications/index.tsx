@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/Icon";
+import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
 import Settings from "@/components/Settings";
 import Notification from "./Notification";
@@ -25,6 +25,9 @@ type NotificationsProps = {
     label?: string;
     labelClassName?: string;
     menuItemsClassName?: string;
+    /** When provided, renders only the modal(s) in controlled mode (no button) */
+    visible?: boolean;
+    onClose?: () => void;
 };
 
 const Notifications = ({
@@ -34,46 +37,58 @@ const Notifications = ({
     label,
     labelClassName,
     menuItemsClassName,
+    visible: controlledVisible,
+    onClose: controlledOnClose,
 }: NotificationsProps) => {
-    const [visibleNotifications, setVisibleNotifications] =
-        useState<boolean>(false);
+    const [internalVisible, setInternalVisible] = useState<boolean>(false);
     const [visibleSettings, setVisibleSettings] = useState<boolean>(false);
 
+    const isControlled = controlledVisible !== undefined && controlledOnClose;
+    const visibleNotifications = isControlled
+        ? controlledVisible
+        : internalVisible;
+
     const handleOpenSettings = () => {
-        setVisibleNotifications(false);
+        if (isControlled) {
+            controlledOnClose();
+        } else {
+            setInternalVisible(false);
+        }
         setVisibleSettings(true);
     };
 
     return (
         <>
-            <div className={twMerge("relative z-10", className)}>
-                <button
-                    className={twMerge(
-                        "group relative flex h-10 items-center",
-                        buttonClassName
-                    )}
-                    onClick={() => setVisibleNotifications(true)}
-                    type="button"
-                >
-                    <div className="relative flex w-10 h-10 shrink-0 items-center justify-center">
-                        <Icon
-                            className="fill-n-4 transition-colors group-hover:fill-primary-1"
-                            name="info-circle"
-                        />
-                        <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-accent-1"></div>
-                    </div>
-                    {label && (
-                        <span
-                            className={twMerge(
-                                "base2 font-semibold text-n-3/75 transition-colors group-hover:text-n-1",
-                                labelClassName
-                            )}
-                        >
-                            {label}
-                        </span>
-                    )}
-                </button>
-            </div>
+            {!isControlled && (
+                <div className={twMerge("relative z-10", className)}>
+                    <button
+                        className={twMerge(
+                            "group relative flex h-10 items-center",
+                            buttonClassName
+                        )}
+                        onClick={() => setInternalVisible(true)}
+                        type="button"
+                    >
+                        <div className="relative flex w-10 h-10 shrink-0 items-center justify-center">
+                            <Icon
+                                className="stroke-n-4 transition-colors group-hover:stroke-primary-1"
+                                name="info-circle"
+                            />
+                            <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-accent-1"></div>
+                        </div>
+                        {label && (
+                            <span
+                                className={twMerge(
+                                    "base2 font-semibold text-n-3/75 transition-colors group-hover:text-n-1",
+                                    labelClassName
+                                )}
+                            >
+                                {label}
+                            </span>
+                        )}
+                    </button>
+                </div>
+            )}
             <Modal
                 className="md:!p-4"
                 classWrap={twMerge(
@@ -82,7 +97,9 @@ const Notifications = ({
                 )}
                 classButtonClose="absolute top-5 right-5 fill-n-4"
                 visible={visibleNotifications}
-                onClose={() => setVisibleNotifications(false)}
+                onClose={() =>
+                    isControlled ? controlledOnClose() : setInternalVisible(false)
+                }
             >
                 <div className="flex justify-between items-center mb-3 pr-10">
                     <div className="h4 md:h5">Notifications</div>
@@ -92,7 +109,7 @@ const Notifications = ({
                         type="button"
                     >
                         <Icon
-                            className="fill-n-4 transition-colors group-hover:fill-primary-1"
+                            className="stroke-n-4 transition-colors group-hover:stroke-primary-1"
                             name="settings"
                         />
                     </button>
@@ -102,7 +119,11 @@ const Notifications = ({
                         <Notification
                             key={notification.id}
                             item={notification}
-                            onClick={() => setVisibleNotifications(false)}
+                            onClick={() =>
+                            isControlled
+                                ? controlledOnClose()
+                                : setInternalVisible(false)
+                        }
                         />
                     ))}
                 </div>
