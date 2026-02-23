@@ -3,7 +3,7 @@ import { tool, zodSchema } from "ai";
 import { z } from "zod";
 import type { AiProvider } from "../types";
 import type { TerminalRunResult } from "./types";
-import { DENYLIST_COMMANDS } from "@/electron/terminal-runner";
+import { DENYLIST_COMMANDS } from "./denylist";
 
 const terminalInputSchema = z.object({
   description: z
@@ -68,7 +68,7 @@ Provide a short 'description' for the step label (e.g. 'Check git status').
 Use tokenized 'command' (e.g. ['git','status']). 
 Network is disabled by default. Dangerous commands (rm -rf, sudo, etc.) are blocked.
 Following commands are blocked: 
-${DENYLIST_COMMANDS.join("\n")}
+${[...DENYLIST_COMMANDS].sort().join("\n")}
 
 `;
 export function getTerminalToolSet(

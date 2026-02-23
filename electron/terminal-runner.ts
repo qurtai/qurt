@@ -47,33 +47,7 @@ export interface TerminalRunResult {
   artifacts?: Array<{ path: string; hash?: string }>;
 }
 
-/** Lowercase command (or first token) for denylist. */
-const DENYLIST_COMMANDS = new Set([
-  "rm",
-  "sudo",
-  "su",
-  "chmod",
-  "chown",
-  "passwd",
-  "mkfs",
-  "dd",
-  "wget",
-  "curl",
-  "nc",
-  "netcat",
-  "ncat",
-  "ssh",
-  "scp",
-  "sftp",
-  "eval",
-  "bash",
-  "sh",
-  "zsh",
-  "powershell",
-  "pwsh",
-  "cmd",
-  "cmd.exe",
-]);
+import { DENYLIST_COMMANDS } from "../src/tools/terminal/denylist";
 
 /** Patterns that deny the whole command line (joined). */
 const DENYLIST_PATTERNS = [
