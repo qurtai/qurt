@@ -100,8 +100,9 @@ const completeJsxTag = (code: string) => {
   return (
     result +
     stack
-      .toReversed()
-      .map((tag) => `</${tag}>`)
+      .slice()
+      .reverse()
+      .map((tag: string) => `</${tag}>`)
       .join("")
   );
 };

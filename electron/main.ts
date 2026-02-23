@@ -20,6 +20,9 @@ import {
 let mainWindow: BrowserWindow | null = null;
 
 function getDistPath() {
+  if (app.isPackaged) {
+    return path.join(app.getAppPath(), "dist");
+  }
   return path.join(__dirname, "../dist");
 }
 
@@ -49,7 +52,7 @@ async function createWindow() {
   });
 
   // Remove the default application menu (File/Edit/etc.)
-  // mainWindow.removeMenu();
+  mainWindow.removeMenu();
 
   mainWindow.on("closed", () => {
     mainWindow = null;

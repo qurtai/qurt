@@ -22,7 +22,7 @@ describe("getTextFromParts", () => {
   it("ignores non-text parts", () => {
     const parts = [
       { type: "text" as const, text: "Hi" },
-      { type: "reasoning" as const, text: "thinking...", state: "complete" as const },
+      { type: "reasoning" as const, text: "thinking...", state: "done" as const },
     ];
     expect(getTextFromParts(parts)).toBe("Hi");
   });
@@ -45,12 +45,25 @@ describe("getAttachmentIdFromUrl", () => {
 
 describe("getToolPartName", () => {
   it("returns toolName for dynamic-tool part", () => {
-    const part = { type: "dynamic-tool" as const, toolName: "apply_file_patch" };
+    const part = {
+      type: "dynamic-tool" as const,
+      toolName: "apply_file_patch",
+      toolCallId: "tc-1",
+      state: "output-available" as const,
+      input: {},
+      output: "",
+    };
     expect(getToolPartName(part)).toBe("apply_file_patch");
   });
 
   it("returns name for tool-* part", () => {
-    const part = { type: "tool-run_terminal" as const };
+    const part = {
+      type: "tool-run_terminal" as const,
+      toolCallId: "tc-1",
+      state: "output-available" as const,
+      input: {},
+      output: "",
+    };
     expect(getToolPartName(part)).toBe("run_terminal");
   });
 
@@ -61,8 +74,15 @@ describe("getToolPartName", () => {
 });
 
 describe("getToolStepStatus", () => {
-  it("returns complete when part has no state", () => {
-    const part = { type: "dynamic-tool" as const, toolName: "x" };
+  it("returns complete when part has output-available state", () => {
+    const part = {
+      type: "dynamic-tool" as const,
+      toolName: "x",
+      toolCallId: "tc-1",
+      state: "output-available" as const,
+      input: {},
+      output: "",
+    };
     expect(getToolStepStatus(part)).toBe("complete");
   });
 
@@ -70,7 +90,9 @@ describe("getToolStepStatus", () => {
     const part = {
       type: "dynamic-tool" as const,
       toolName: "x",
+      toolCallId: "tc-1",
       state: "input-streaming" as const,
+      input: {},
     };
     expect(getToolStepStatus(part)).toBe("active");
   });
@@ -79,8 +101,10 @@ describe("getToolStepStatus", () => {
     const part = {
       type: "dynamic-tool" as const,
       toolName: "x",
+      toolCallId: "tc-1",
       state: "approval-requested" as const,
       approval: { id: "a" },
+      input: {},
     };
     expect(getToolStepStatus(part)).toBe("active");
   });
@@ -89,16 +113,22 @@ describe("getToolStepStatus", () => {
     const part = {
       type: "dynamic-tool" as const,
       toolName: "x",
+      toolCallId: "tc-1",
       state: "approval-responded" as const,
+      approval: { id: "a", approved: true as const },
+      input: {},
     };
     expect(getToolStepStatus(part)).toBe("pending");
   });
 
-  it("returns complete for other states", () => {
+  it("returns complete for output-available state", () => {
     const part = {
       type: "dynamic-tool" as const,
       toolName: "x",
-      state: "complete" as const,
+      toolCallId: "tc-1",
+      state: "output-available" as const,
+      input: {},
+      output: "",
     };
     expect(getToolStepStatus(part)).toBe("complete");
   });

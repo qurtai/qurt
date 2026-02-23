@@ -28,7 +28,7 @@ describe("AssistantMessageItem", () => {
       id: "msg-2",
       role: "assistant" as const,
       parts: [
-        { type: "reasoning" as const, text: "Let me think...", state: "complete" as const },
+        { type: "reasoning" as const, text: "Let me think...", state: "done" as const },
         { type: "text" as const, text: "The answer is 42." },
       ],
     };
@@ -53,6 +53,7 @@ describe("AssistantMessageItem", () => {
           toolCallId: "tc-1",
           input: {},
           output: "Tool result",
+          state: "output-available" as const,
         },
       ],
     };
