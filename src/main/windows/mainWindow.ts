@@ -11,9 +11,11 @@ function getDistPath(): string {
 }
 
 function getPublicPath(): string {
-  return app.isPackaged
-    ? getDistPath()
-    : path.join(getDistPath(), "../public");
+  if (app.isPackaged) {
+    return getDistPath();
+  }
+  // In dev, use project root so public/icon.png resolves correctly
+  return path.join(app.getAppPath(), "public");
 }
 
 export function getPreloadPath(): string {
@@ -49,6 +51,7 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     mainWindow.loadURL(VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(path.join(getDistPath(), "index.html"));
+    mainWindow.removeMenu();
   }
 
   return mainWindow;

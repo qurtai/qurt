@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
@@ -11,9 +10,9 @@ import Notifications from "@/components/LeftSidebar/Notifications";
 import Navigation from "./Navigation";
 import ChatGroup from "./ChatGroup";
 import ToggleTheme from "./ToggleTheme";
-import { Faq, Updates } from "@/features/updatesFaq";
 
 import { settings } from "@/constants/settings";
+import { OPEN_SETTINGS_MODAL_EVENT } from "@/constants/ui-events";
 import { notifications } from "@/mocks/notifications";
 import { twMerge } from "tailwind-merge";
 import {
@@ -24,13 +23,6 @@ import {
     CHAT_HISTORY_UPDATED_EVENT,
     chatService,
 } from "@/services/chat-service";
-import {
-    updatesFaqService,
-    type FaqItem,
-    type UpdateItem,
-} from "@/services/updates-faq-service";
-
-const updatesFaqTabNavigation = ["Updates", "FAQ"];
 
 type LeftSidebarProps = {
     value: boolean;
@@ -49,11 +41,8 @@ const LeftSidebar = ({
     const location = useLocation();
     const [visibleSearch, setVisibleSearch] = useState<boolean>(false);
     const [visibleSettings, setVisibleSettings] = useState<boolean>(false);
-    const [visibleUpdatesFaq, setVisibleUpdatesFaq] = useState<boolean>(false);
     const [visibleNotifications, setVisibleNotifications] =
         useState<boolean>(false);
-    const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
-    const [updateItems, setUpdateItems] = useState<UpdateItem[]>([]);
     const [chatGroupItems, setChatGroupItems] = useState<
         {
             id: string;
@@ -70,6 +59,21 @@ const LeftSidebar = ({
         window.addEventListener("keydown", handleWindowKeyDown);
         return () => {
             window.removeEventListener("keydown", handleWindowKeyDown);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleOpenSettingsModal = () => {
+            setVisibleSettings(true);
+        };
+
+        window.addEventListener(OPEN_SETTINGS_MODAL_EVENT, handleOpenSettingsModal);
+
+        return () => {
+            window.removeEventListener(
+                OPEN_SETTINGS_MODAL_EVENT,
+                handleOpenSettingsModal
+            );
         };
     }, []);
 
@@ -110,26 +114,6 @@ const LeftSidebar = ({
         };
     }, [loadChatGroups]);
 
-    useEffect(() => {
-        let active = true;
-
-        const loadUpdatesFaq = async () => {
-            const content = await updatesFaqService.getContent();
-            if (!active) {
-                return;
-            }
-
-            setFaqItems(content.faqItems);
-            setUpdateItems(content.updateItems);
-        };
-
-        void loadUpdatesFaq();
-
-        return () => {
-            active = false;
-        };
-    }, []);
-
     const handleWindowKeyDown = (event: any) => {
         if (event.metaKey && event.key === "f") {
             event.preventDefault();
@@ -154,22 +138,22 @@ const LeftSidebar = ({
             onClick: () => setVisibleSearch(true),
         },
         {
-            title: "Updates & FAQ",
-            icon: "barcode",
-            color: "fill-accent-1",
-            onClick: () => setVisibleUpdatesFaq(true),
-        },
-        {
             title: "Notifications",
             icon: "notification",
             color: "fill-accent-1",
             onClick: () => setVisibleNotifications(true),
         },
         {
+            title: "Updates & FAQ",
+            icon: "barcode",
+            color: "fill-accent-1",
+            url: "/updates-and-faq",
+        },
+        {
             title: "Settings",
             icon: "settings",
             color: "fill-accent-3",
-            onClick: () => setVisibleSettings(true),
+            url: "/settings",
         },
     ];
 
@@ -242,44 +226,6 @@ const LeftSidebar = ({
             </div>
             <Modal
                 className="md:!p-0"
-                classWrap="max-w-[62rem] md:min-h-screen-ios md:rounded-none"
-                classButtonClose="absolute top-5 right-5 fill-n-4 md:top-6 md:right-6"
-                classOverlay="md:bg-n-1"
-                visible={visibleUpdatesFaq}
-                onClose={() => setVisibleUpdatesFaq(false)}
-            >
-                <div className="p-16 md:pt-8 md:px-6 md:pb-10">
-                    <div className="max-w-[58.5rem] mx-auto">
-                        <div className="mb-4 h2 md:pr-16 md:h3">
-                            Updates & FAQ
-                        </div>
-                        <div className="mb-12 body1 text-n-4 md:mb-6">
-                            Features, fixes & improvements.
-                        </div>
-                        <Tabs defaultValue="Updates" className="w-full">
-                            <TabsList className="mb-12 md:mb-6 h-auto p-0 bg-transparent gap-3">
-                                {updatesFaqTabNavigation.map((tab) => (
-                                    <TabsTrigger
-                                        key={tab}
-                                        value={tab}
-                                        className="h-10 px-6 rounded-full base1 text-n-4 transition-colors outline-none tap-highlight-color hover:text-n-7 data-[state=active]:bg-primary-1 data-[state=active]:!text-n-1 dark:hover:text-n-1"
-                                    >
-                                        {tab}
-                                    </TabsTrigger>
-                                ))}
-                            </TabsList>
-                            <TabsContent value="Updates">
-                                <Updates items={updateItems} />
-                            </TabsContent>
-                            <TabsContent value="FAQ">
-                                <Faq items={faqItems} />
-                            </TabsContent>
-                        </Tabs>
-                    </div>
-                </div>
-            </Modal>
-            <Modal
-                className="md:!p-0"
                 classWrap="md:min-h-screen-ios md:rounded-none dark:shadow-[inset_0_0_0_0.0625rem_#232627,0_2rem_4rem_-1rem_rgba(0,0,0,0.33)] dark:md:shadow-none"
                 classButtonClose="absolute top-5 right-5 flex items-center justify-center w-10 h-10 rounded-full fill-n-4 hover:fill-primary-1 hover:bg-n-2 dark:fill-n-1 dark:hover:bg-n-6 md:top-6 md:right-6"
                 classOverlay="md:bg-n-1"
@@ -287,16 +233,6 @@ const LeftSidebar = ({
                 onClose={() => setVisibleSearch(false)}
             >
                 <Search />
-            </Modal>
-            <Modal
-                className="md:!p-0"
-                classWrap="max-w-[48rem] md:min-h-screen-ios md:rounded-none"
-                classButtonClose="absolute top-5 right-5 flex items-center justify-center w-10 h-10 rounded-full fill-n-4 hover:fill-primary-1 hover:bg-n-2 dark:fill-n-4 dark:hover:bg-n-6 md:top-6 md:right-6"
-                classOverlay="md:bg-n-1"
-                visible={visibleSettings}
-                onClose={() => setVisibleSettings(false)}
-            >
-                <Settings items={settings} />
             </Modal>
         </>
     );

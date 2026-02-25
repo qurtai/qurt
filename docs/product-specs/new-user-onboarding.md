@@ -37,6 +37,19 @@ Without guided onboarding, users can drop off before experiencing the product's 
 - validation and friendly error handling for missing/invalid key
 - one-click "start first chat" action once setup is complete
 
+## MVP Status
+
+- implemented: first-run carousel with three slides in a split layout (illustration + content)
+  - slide 1: value proposition with icon-accented feature highlights
+  - slide 2: Ask/Agent mode overview reframed as empowerment, with data-local trust signals
+  - slide 3: provider setup with concrete provider cards (OpenAI, Anthropic, Google)
+- implemented: placeholder illustrations per slide (replace with branded art)
+- implemented: final onboarding action opens Settings to AI Providers
+- implemented: onboarding is shown once and then skipped on subsequent launches
+- implemented: pill-shaped active dot indicators with step counter ("Step X of 3")
+- implemented: back navigation on slides 2 and 3
+- implemented: entrance animation on slide content transitions
+
 ## UX / Trust Requirements
 
 - clearly explain key ownership and local storage behavior

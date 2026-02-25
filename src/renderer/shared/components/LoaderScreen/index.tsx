@@ -24,7 +24,7 @@ export default function LoaderScreen() {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-n-7">
       <img
-        src="/logo-loader.png"
+        src="./logo-loader.png"
         alt="Alem"
         className="h-32 w-auto object-contain md:h-36"
         width={256}
@@ -33,7 +33,7 @@ export default function LoaderScreen() {
       <div className="min-h-[2rem] px-6 text-center">
         <p
           key={index}
-          className="font-inter text-base font-medium tracking-tight text-n-4 animate-in fade-in duration-300"
+          className="body2 font-medium text-n-2 animate-in fade-in duration-300"
         >
           {SLOGANS[index]}
         </p>

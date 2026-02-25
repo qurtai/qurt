@@ -9,14 +9,9 @@ export const settings = [
     title: "Appearance",
     icon: "sun",
   },
-  {
-    id: "chat-export",
-    title: "Chat export",
-    icon: "download-fill",
-  },
-  {
-    id: "terminal",
-    title: "Terminal (Agent)",
-    icon: "terminal",
-  },
+  // {
+  //   id: "chat-export",
+  //   title: "Chat export",
+  //   icon: "download-fill",
+  // },
 ];

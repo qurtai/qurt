@@ -130,7 +130,7 @@ const Notifications = ({
             </Modal>
             <Modal
                 className="md:!p-0"
-                classWrap="max-w-[48rem] md:min-h-screen-ios md:rounded-none"
+                classWrap="max-w-[58.5rem] md:min-h-screen-ios md:rounded-none"
                 classButtonClose="absolute top-5 right-5 flex items-center justify-center w-10 h-10 rounded-full fill-n-4 hover:fill-primary-1 hover:bg-n-2 dark:fill-n-4 dark:hover:bg-n-6 md:top-6 md:right-6"
                 classOverlay="md:bg-n-1"
                 visible={visibleSettings}

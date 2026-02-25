@@ -18,7 +18,6 @@ export const IPC_CHANNELS = {
   OPEN_FOLDER_DIALOG: "open-folder-dialog",
   // Terminal
   RUN_TERMINAL: "run-terminal",
-  GET_TERMINAL_WORKSPACE_ROOT: "get-terminal-workspace-root",
   // File patch
   APPLY_FILE_PATCH: "apply-file-patch",
   RESTORE_FILE_PATCH_CHECKPOINT: "restore-file-patch-checkpoint",

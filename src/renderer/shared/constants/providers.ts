@@ -4,6 +4,10 @@ export interface ProviderModelInfo {
   reasoningEffort?: "low" | "medium" | "high" | "xhigh";
   googleThinkingLevel?: "minimal" | "low" | "medium" | "high";
   anthropicThinkingBudgetTokens?: number;
+  /** xAI reasoning models: reasoningEffort for grok-4-1-fast-reasoning etc. */
+  xaiReasoningEffort?: "low" | "high";
+  /** Moonshot AI thinking models: budget tokens for kimi-k2-thinking */
+  moonshotaiThinkingBudgetTokens?: number;
   displayName: string;
   description: string;
 }
@@ -12,6 +16,10 @@ export interface ProviderInfo {
   id: string;
   name: string;
   description: string;
+  /** URL where users can obtain an API key for this provider */
+  apiKeyUrl?: string;
+  /** Path to provider logo in public folder (e.g. /provider-logos/openai.svg) */
+  logoPath: string;
   models: ProviderModelInfo[];
 }
 
@@ -22,6 +30,8 @@ export const PROVIDERS: ProviderInfo[] = [
     id: "openai",
     name: "OpenAI",
     description: "GPT-5.2, GPT-5 mini, GPT-5 nano",
+    apiKeyUrl: "https://platform.openai.com/api-keys",
+    logoPath: "/provider-logos/openai.svg",
     models: [
       {
         id: "gpt-5.2-low",
@@ -106,6 +116,8 @@ export const PROVIDERS: ProviderInfo[] = [
     id: "anthropic",
     name: "Anthropic",
     description: "Claude Opus 4.6, Claude Sonnet 4.6, Claude Haiku 4.5",
+    apiKeyUrl: "https://console.anthropic.com/settings/keys",
+    logoPath: "/provider-logos/anthropic.svg",
     models: [
       {
         id: "claude-opus-4-6-non-thinking",
@@ -147,6 +159,8 @@ export const PROVIDERS: ProviderInfo[] = [
     id: "google",
     name: "Google",
     description: "Gemini 3.1 Pro, Gemini 3 Flash (preview)",
+    apiKeyUrl: "https://aistudio.google.com/app/apikey",
+    logoPath: "/provider-logos/google.svg",
     models: [
       {
         id: "gemini-3.1-pro-preview-low",
@@ -198,12 +212,63 @@ export const PROVIDERS: ProviderInfo[] = [
       },
     ],
   },
+  {
+    id: "moonshotai",
+    name: "Moonshot AI",
+    description: "Kimi K2.5, Kimi K2 Thinking — visual agentic intelligence",
+    apiKeyUrl: "https://platform.moonshot.ai",
+    logoPath: "/provider-logos/moonshotai.svg",
+    models: [
+      {
+        id: "kimi-k2.5",
+        modelId: "kimi-k2.5",
+        displayName: "Kimi K2.5",
+        description:
+          "Most powerful open-source model with vision, coding, and agent swarm. Native multimodal.",
+      },
+      {
+        id: "kimi-k2-thinking",
+        modelId: "kimi-k2-thinking",
+        moonshotaiThinkingBudgetTokens: 2048,
+        displayName: "Kimi K2 Thinking",
+        description:
+          "Step-by-step reasoning model for complex multi-step tasks.",
+      },
+    ],
+  },
+  {
+    id: "xai",
+    name: "xAI",
+    description: "Grok 4 — reasoning and vision models",
+    apiKeyUrl: "https://console.x.ai",
+    logoPath: "/provider-logos/xai.svg",
+    models: [
+      {
+        id: "grok-4-1-fast-reasoning-high",
+        modelId: "grok-4-1-fast-reasoning",
+        xaiReasoningEffort: "high",
+        displayName: "Grok 4.1 Fast Reasoning (High)",
+        description:
+          "Vision and reasoning model with high reasoning effort for complex tasks.",
+      },
+      {
+        id: "grok-4-1-fast-reasoning-low",
+        modelId: "grok-4-1-fast-reasoning",
+        xaiReasoningEffort: "low",
+        displayName: "Grok 4.1 Fast Reasoning (Low)",
+        description:
+          "Vision and reasoning model with low reasoning effort for faster responses.",
+      },
+    ],
+  },
 ];
 
 export const DEFAULT_ENABLED_MODELS: Record<string, string[]> = {
   openai: ["gpt-5-mini-medium"],
   anthropic: ["claude-sonnet-4-6-non-thinking"],
   google: ["gemini-3-flash-preview-medium"],
+  moonshotai: ["kimi-k2.5"],
+  xai: ["grok-4-1-fast-reasoning-high"],
 };
 
 export function resolveProviderModel(
@@ -214,6 +279,8 @@ export function resolveProviderModel(
   reasoningEffort?: ProviderModelInfo["reasoningEffort"];
   googleThinkingLevel?: ProviderModelInfo["googleThinkingLevel"];
   anthropicThinkingBudgetTokens?: ProviderModelInfo["anthropicThinkingBudgetTokens"];
+  xaiReasoningEffort?: ProviderModelInfo["xaiReasoningEffort"];
+  moonshotaiThinkingBudgetTokens?: ProviderModelInfo["moonshotaiThinkingBudgetTokens"];
 } {
   const provider = PROVIDERS.find((item) => item.id === providerId);
   const selectedModel = provider?.models.find((item) => item.id === selectedModelId);
@@ -227,5 +294,7 @@ export function resolveProviderModel(
     reasoningEffort: selectedModel.reasoningEffort,
     googleThinkingLevel: selectedModel.googleThinkingLevel,
     anthropicThinkingBudgetTokens: selectedModel.anthropicThinkingBudgetTokens,
+    xaiReasoningEffort: selectedModel.xaiReasoningEffort,
+    moonshotaiThinkingBudgetTokens: selectedModel.moonshotaiThinkingBudgetTokens,
   };
 }

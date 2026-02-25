@@ -1,8 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ipcMain } from "electron";
-import { app } from "electron";
-import { getStore } from "../services/appStore";
 import {
   runFilePatch,
   type FilePatchRequest,
@@ -12,34 +10,47 @@ import {
   restoreCheckpoint,
   restoreCheckpoints,
 } from "../services/filePatchCheckpoints";
-import { getTerminalWorkspaceRoot } from "../services/terminalRunner";
+
+const WORKSPACE_NOT_SET_MESSAGE =
+  "Workspace is not set for this chat. Please select a workspace folder using the button above the input before running terminal or file-patch commands.";
 
 export function registerFilePatchIpc(): void {
-  const store = getStore();
-
   ipcMain.handle(
     "apply-file-patch",
     async (_event, request: FilePatchRequest): Promise<FilePatchResult> => {
-      const s = store.get("settings", {}) as Record<string, unknown> & {
-        terminalWorkspaceRoot?: string;
-      };
-      let root: string;
-      const override = request.workspaceOverride?.trim();
-      if (override) {
-        try {
-          const resolved = path.resolve(override);
-          if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-            root = resolved;
-          } else {
-            root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
-          }
-        } catch {
-          root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
-        }
-      } else {
-        root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
+      const root = request.workspaceRoot?.trim();
+      if (!root) {
+        return {
+          status: "error",
+          files_changed: [],
+          rejected_ops: [{ path: "", reason: WORKSPACE_NOT_SET_MESSAGE }],
+          post_hashes: {},
+        };
       }
-      return runFilePatch({ request, workspaceRoot: root });
+      try {
+        const resolved = path.resolve(root);
+        if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+          return {
+            status: "error",
+            files_changed: [],
+            rejected_ops: [
+              {
+                path: "",
+                reason: "Workspace path is invalid or not a directory.",
+              },
+            ],
+            post_hashes: {},
+          };
+        }
+        return runFilePatch({ request, workspaceRoot: resolved });
+      } catch {
+        return {
+          status: "error",
+          files_changed: [],
+          rejected_ops: [{ path: "", reason: "Workspace path is invalid." }],
+          post_hashes: {},
+        };
+      }
     }
   );
 

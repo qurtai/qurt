@@ -5,7 +5,6 @@ import Menu from "./Menu";
 import AiProviders from "./AiProviders";
 import ChatExport from "./ChatExport";
 import Appearance from "./Appearance";
-import Terminal from "./Terminal";
 
 type SettingsType = {
   id: string;
@@ -26,7 +25,7 @@ const Settings = ({ items, activeItem }: SettingsProps) => {
   });
 
   return (
-    <div className="p-12 lg:px-8 md:pt-16 md:px-5 md:pb-8">
+    <div className="lg:px-8 md:pt-16 md:px-5 md:pb-8">
       <div className="flex md:block">
         {isMobile ? (
           <Select
@@ -46,7 +45,6 @@ const Settings = ({ items, activeItem }: SettingsProps) => {
           {active.id === "ai-providers" && <AiProviders />}
           {active.id === "appearance" && <Appearance />}
           {active.id === "chat-export" && <ChatExport />}
-          {active.id === "terminal" && <Terminal />}
         </div>
       </div>
     </div>

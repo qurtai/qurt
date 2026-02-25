@@ -70,12 +70,15 @@ Network is disabled by default. Dangerous commands (rm -rf, sudo, etc.) are bloc
 Following commands are blocked: 
 ${[...DENYLIST_COMMANDS].sort().join("\n")}
 `;
+const WORKSPACE_NOT_SET_MESSAGE =
+  "Workspace is not set for this chat. Please select a workspace folder using the button above the input before running terminal or file-patch commands.";
+
 export function getTerminalToolSet(
   _provider: AiProvider,
   _apiKey: string,
   options?: import("../types").ToolSetOptions
 ): ToolSet {
-  const workspaceOverride = options?.terminalWorkspaceOverride;
+  const workspaceRoot = options?.workspaceRoot?.trim();
   return {
     run_terminal: tool({
       description,
@@ -91,17 +94,19 @@ export function getTerminalToolSet(
             truncated: false,
           };
         }
-        const trimmedOverride =
-          typeof workspaceOverride === "string" && workspaceOverride.trim()
-            ? workspaceOverride.trim()
-            : undefined;
-
-        const request = trimmedOverride
-          ? { ...input, workspaceOverride: trimmedOverride }
-          : input;
-        return window.alem.runTerminal(
-          request
-        ) as Promise<TerminalRunResult>;
+        if (!workspaceRoot) {
+          return {
+            stdout: "",
+            stderr: WORKSPACE_NOT_SET_MESSAGE,
+            outcome: { type: "denied", reason: "workspace not set" },
+            duration_ms: 0,
+            truncated: false,
+          };
+        }
+        return window.alem.runTerminal({
+          ...input,
+          workspaceRoot,
+        }) as Promise<TerminalRunResult>;
       },
     }),
   };

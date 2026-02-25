@@ -32,7 +32,7 @@ describe("toDownloadableMessages", () => {
     ];
     expect(toDownloadableMessages(messages)).toEqual([
       {
-        content: "Here is the answer.\n\nReasoning:\nLet me think...",
+        content: "Here is the answer.\n\n*Reasoning:*\n\n> Let me think...",
         role: "assistant",
       },
     ]);
@@ -54,7 +54,7 @@ describe("toDownloadableMessages", () => {
     ]);
   });
 
-  it("includes tool serialization for tool parts", () => {
+  it("includes tool summary for tool parts (no verbose output)", () => {
     const messages = [
       {
         id: "1",
@@ -66,7 +66,13 @@ describe("toDownloadableMessages", () => {
             toolName: "run_terminal",
             toolCallId: "tc1",
             input: { command: ["ls"] },
-            output: "file1.txt",
+            output: {
+              stdout: "file1.txt\nfile2.txt",
+              stderr: "",
+              outcome: { type: "exit" as const, exit_code: 0 },
+              duration_ms: 50,
+              truncated: false,
+            },
             state: "output-available" as const,
           },
         ],
@@ -76,10 +82,12 @@ describe("toDownloadableMessages", () => {
     expect(result).toHaveLength(1);
     expect(result[0].role).toBe("assistant");
     expect(result[0].content).toContain("Done.");
-    expect(result[0].content).toContain("Tool run_terminal");
-    expect(result[0].content).toContain("command");
+    expect(result[0].content).toContain("**Terminal:**");
     expect(result[0].content).toContain("ls");
-    expect(result[0].content).toContain("Result: \"file1.txt\"");
+    expect(result[0].content).toContain("exit 0");
+    expect(result[0].content).toContain("50ms");
+    expect(result[0].content).not.toContain("file1.txt");
+    expect(result[0].content).not.toContain("stdout");
   });
 
   it("includes error text when present", () => {

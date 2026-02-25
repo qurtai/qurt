@@ -98,7 +98,7 @@ const Profile = ({}: ProfileProps) => {
             </div>
             <Modal
                 className="md:!p-0"
-                classWrap="max-w-[48rem] md:min-h-screen-ios md:rounded-none"
+                classWrap="max-w-[58.5rem] md:min-h-screen-ios md:rounded-none"
                 classButtonClose="hidden md:block md:absolute md:top-5 md:right-5 dark:fill-n-4"
                 classOverlay="md:bg-n-1"
                 visible={visibleSettings}

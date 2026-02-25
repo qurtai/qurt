@@ -28,8 +28,8 @@ interface UseAlemChatOptions {
   chatId?: string;
   initialMessages?: UIMessage[];
   onMessagesChange?: (messages: UIMessage[], sourceChatId?: string) => void;
-  /** Per-chat workspace root for terminal tool; overrides global default when set. */
-  terminalWorkspaceOverride?: string;
+  /** Per-chat workspace root for terminal and file-patch tools; required in agent mode. */
+  workspaceRoot?: string;
 }
 
 function isToolApprovalRequested(part: UIMessage["parts"][number]): boolean {
@@ -80,7 +80,7 @@ export function useAlemChat({
   chatId,
   initialMessages = [],
   onMessagesChange,
-  terminalWorkspaceOverride,
+  workspaceRoot,
 }: UseAlemChatOptions = {}) {
   const { settings } = useContext(AlemContext);
   const [input, setInput] = useState("");
@@ -94,9 +94,9 @@ export function useAlemChat({
   const [wasStoppedByUser, setWasStoppedByUser] = useState(false);
   const activeRequestModeRef = useRef<PromptMode>("ask");
   const inFlightChatIdRef = useRef<string | undefined>(chatId);
-  const terminalWorkspaceOverrideRef = useRef(terminalWorkspaceOverride);
+  const workspaceRootRef = useRef(workspaceRoot);
   const chatIdRef = useRef(chatId);
-  terminalWorkspaceOverrideRef.current = terminalWorkspaceOverride;
+  workspaceRootRef.current = workspaceRoot;
   chatIdRef.current = chatId;
 
   const activeProvider = settings?.activeProvider;
@@ -116,7 +116,7 @@ export function useAlemChat({
             apiKey,
             mode: activeRequestModeRef.current,
             toolConfig: {
-              terminalWorkspaceOverride: terminalWorkspaceOverrideRef.current,
+              workspaceRoot: workspaceRootRef.current,
               browserChatId: chatIdRef.current ?? undefined,
             },
           });

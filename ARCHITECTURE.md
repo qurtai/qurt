@@ -22,6 +22,7 @@ System architecture for `alem`.
    - split by domain: `src/preload/api/*.api.ts`, composed in `src/preload/index.ts`
 3. **Renderer (React + Vite)** (`src/renderer/`)
    - routes, UI, chat workflows, settings
+   - first-run onboarding is gated in `src/renderer/App.tsx` and rendered as a carousel page in `src/renderer/features/onboarding/`
    - **UI system**: Radix UI primitives in `src/renderer/shared/components/ui/`; typography unified to Inter; legacy wrappers (Select, Modal, Actions, Switch, Checkbox, Radio) are Radix-backed adapters
    - left sidebar owns shared quick actions (search, updates, notifications, settings) across home/chat
    - checkpoint restore: `src/renderer/stores/checkpoint-store.ts`, `src/renderer/services/checkpoint-service.ts`
@@ -40,7 +41,7 @@ System architecture for `alem`.
 - `src/renderer/`: React app
   - `db/`: Dexie schema (`appDb.ts`), repos (`chats.repo.ts`, `chat-groups.repo.ts`), `bootstrap.ts`
   - `agent/tools/`: tool definitions, adapters, display components
-  - `features/`: routed pages (chat, home, updatesFaq)
+  - `features/`: routed pages (chat, home, updatesFaq, settings)
   - `shared/`: components, hooks, constants, lib, utils, types
 - `templates/`: prebuilt template pages; do not edit unless explicitly requested
 - `docs/faq/`, `docs/updates/`: markdown-driven content for Updates & FAQ UI
@@ -49,7 +50,8 @@ System architecture for `alem`.
 
 - **Settings and API keys**
   - stored in `electron-store` (`alem-config`) via `appStore` in main process
-  - includes active provider/model, enabled models, theme, API key map, `terminalWorkspaceRoot`, `browserAllowedHosts`
+  - includes active provider/model, enabled models, theme, API key map, `browserAllowedHosts`
+  - includes a `hasSeenOnboarding` flag to ensure onboarding is shown only on first run
 - **Attachment binaries**
   - saved under app userData (`chat-attachments`)
   - metadata tracked in electron-store `attachments` map
@@ -65,7 +67,7 @@ System architecture for `alem`.
 - chat composer and conversation rendering use shared `ai-elements` primitives
   (`model-selector`, `attachments`, `message`, `conversation`) to keep chat UI
   behavior consistent across home and chat routes
-- supported providers are currently OpenAI, Anthropic, Google
+- supported providers: OpenAI, Anthropic, Google, Moonshot AI (Kimi K2.5), xAI (Grok 4)
 - **`src/renderer/services/provider-service.ts`** is the centralized service for managing AI providers, models, and their configurations:
   - singleton service pattern for consistent provider state
   - handles provider and model resolution, validation, and defaults

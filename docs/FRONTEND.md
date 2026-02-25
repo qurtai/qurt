@@ -16,7 +16,9 @@ Frontend implementation guide for `alem`.
 - Primary pages (feature modules):
   - `src/renderer/features/home`
   - `src/renderer/features/chat`
-  - `src/renderer/features/updatesFaq`
+  - `src/renderer/features/updatesFaq` (route: `/updates-and-faq`)
+  - `src/renderer/features/settings` (route: `/settings`)
+  - `src/renderer/features/onboarding` (first-run carousel)
 - Additional prebuilt routes still come from root `templates/` via alias `@/templates`
 
 ## State And Data Flow
@@ -33,7 +35,7 @@ Frontend implementation guide for `alem`.
 
 ## Provider And Model Handling
 
-- provider catalog: `src/renderer/shared/constants/providers.ts`
+- provider catalog: `src/renderer/shared/constants/providers.ts` (includes `logoPath` for each provider; logos in `public/provider-logos/`)
 - provider key management UI: `src/renderer/shared/components/Settings/AiProviders`
 - active model switcher UI: `src/renderer/shared/components/ModelSelector`
 - model execution adapter: `src/renderer/services/ai-service.ts`

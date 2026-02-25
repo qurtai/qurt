@@ -11,6 +11,7 @@ export function getStore(): Store<any> {
           providers: {},
           activeProvider: "openai",
           activeModel: "gpt-5-mini",
+          hasSeenOnboarding: false,
           enabledModels: {
             openai: ["gpt-5-mini"],
             anthropic: ["claude-sonnet-4-6"],

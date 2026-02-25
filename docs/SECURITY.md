@@ -37,12 +37,12 @@ Primary risks:
 
 ## Terminal Tool Security
 
-- **Workspace restriction**: Commands always run in the configured workspace root (per-chat workspace or setting `terminalWorkspaceRoot` or default Documents); no separate cwd parameter.
+- **Workspace restriction**: Commands always run in the per-chat workspace root; user must select a workspace folder per chat before running terminal or file-patch commands; no default workspace or separate cwd parameter.
 - **Command denylist**: Blocks dangerous patterns (e.g. rm -rf, sudo, su, chmod, credential dumps); blocklist in `src/shared/tools/terminal/denylist.ts`; runner in `src/main/services/terminalRunner.ts`.
 - **Network**: Default deny; requests with `network: { enabled: true }` are rejected in current version (domain allowlist not yet enforced).
 - **Output and time**: Hard caps on `timeout_ms` and `max_output_bytes` enforced in main process.
 - **Approval**: `needsApproval: true`; user must approve each terminal run by default. Scoped options: allow once, allow this tool for this chat, allow all tools for this chat. Auto-approval applies when chat rules match. Per-run approval for boundary violations (new domain, write outside workspace, etc.) is planned; currently such runs are denied.
-- **IPC**: `run-terminal`, `get-terminal-workspace-root`, `apply-file-patch`, `restore-file-patch-checkpoint`, `restore-file-patch-checkpoints`, `browser-set-active-chat`, `browser-close-window`, `browser-execute`, `browser-get-status`; request shape validated before execution.
+- **IPC**: `run-terminal`, `apply-file-patch`, `restore-file-patch-checkpoint`, `restore-file-patch-checkpoints`, `browser-set-active-chat`, `browser-close-window`, `browser-execute`, `browser-get-status`; request shape validated before execution.
 
 ## Browser Tool Security
 

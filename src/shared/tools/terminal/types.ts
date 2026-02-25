@@ -14,8 +14,8 @@ export interface TerminalRunRequest {
   max_output_bytes?: number;
   /** Network: default deny; if enabled, allowed_domains (future). */
   network?: { enabled: false } | { enabled: true; allowed_domains: string[] };
-  /** Per-chat workspace root override; when set, used instead of global settings. */
-  workspaceOverride?: string;
+  /** Per-chat workspace root; required for terminal and file-patch tools. */
+  workspaceRoot: string;
 }
 
 export type TerminalOutcome =

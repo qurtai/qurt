@@ -35,9 +35,11 @@ function getDistPath(): string {
 }
 
 function getPublicPath(): string {
-  return app.isPackaged
-    ? getDistPath()
-    : path.join(getDistPath(), "../public");
+  if (app.isPackaged) {
+    return getDistPath();
+  }
+  // In dev, use project root so public/icon.png resolves correctly
+  return path.join(app.getAppPath(), "public");
 }
 
 function createBrowserWindow(): BrowserWindow {

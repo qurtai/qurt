@@ -19,8 +19,8 @@ export interface AlemApi {
   openAttachment: (attachmentId: string) => Promise<boolean>;
   deleteAttachment: (attachmentId: string) => Promise<boolean>;
   runTerminal: (request: unknown) => Promise<unknown>;
-  getTerminalWorkspaceRoot: () => Promise<string>;
   openFolderDialog: () => Promise<string | null>;
+  openExternal: (url: string) => Promise<void>;
   applyFilePatch: (request: unknown) => Promise<unknown>;
   restoreFilePatchCheckpoint: (checkpointId: string) => Promise<{
     restored: boolean;

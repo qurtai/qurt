@@ -57,6 +57,7 @@ const ChatPage = () => {
         chatGroupIds={activeChat.chatGroupIds}
         downloadMessages={downloadableMessages}
         title={activeChat.title}
+        workspacePath={activeChat.terminalWorkspacePath}
         filePatchCheckpointIds={filePatchCheckpointIds}
         onRestoreFilePatch={handleRestoreFilePatch}
         tokenUsage={tokenUsage}

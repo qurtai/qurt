@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,6 +10,7 @@ import {
 import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
 import ModalShareChat from "@/components/ModalShareChat";
+import Notify from "@/components/Notify";
 import {
     ARCHIVED_CHAT_GROUP_ID,
     chatGroupService,
@@ -117,36 +119,62 @@ const Actions = ({ chatId, chatGroupIds }: ActionsProps) => {
         }
     };
 
-    const handleDeleteChat = async () => {
+    const handleDeleteChat = () => {
         if (isProcessingAction) {
             return;
         }
 
-        const shouldDelete = window.confirm("Delete this chat?");
-        if (!shouldDelete) {
-            return;
-        }
+        toast((t) => (
+            <Notify
+                className="md:flex-col md:items-center md:px-10"
+                iconDelete
+            >
+                <div className="ml-3 mr-6 h6 md:mx-0 md:my-2">
+                    Delete this chat?
+                </div>
+                <div className="flex justify-center">
+                    <button
+                        className="btn-stroke-light btn-medium md:min-w-[6rem]"
+                        onClick={() => toast.dismiss(t.id)}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        className="btn-blue btn-medium ml-3 md:min-w-[6rem]"
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            setIsProcessingAction(true);
+                            try {
+                                await chatService.deleteChats([chatId]);
 
-        setIsProcessingAction(true);
-        try {
-            await chatService.deleteChats([chatId]);
+                                if (activeListId) {
+                                    const latestChat =
+                                        await chatService.getLatestChatInGroup(
+                                            activeListId
+                                        );
+                                    if (latestChat) {
+                                        navigate(
+                                            `/chat/${latestChat.id}${listQuery}`,
+                                            { replace: true }
+                                        );
+                                        return;
+                                    }
+                                }
 
-            if (activeListId) {
-                const latestChat = await chatService.getLatestChatInGroup(
-                    activeListId
-                );
-                if (latestChat) {
-                    navigate(`/chat/${latestChat.id}${listQuery}`, {
-                        replace: true,
-                    });
-                    return;
-                }
-            }
-
-            navigate(activeListId ? `/${listQuery}` : "/", { replace: true });
-        } finally {
-            setIsProcessingAction(false);
-        }
+                                navigate(
+                                    activeListId ? `/${listQuery}` : "/",
+                                    { replace: true }
+                                );
+                            } finally {
+                                setIsProcessingAction(false);
+                            }
+                        }}
+                    >
+                        Delete
+                    </button>
+                </div>
+            </Notify>
+        ));
     };
 
     const menu = [

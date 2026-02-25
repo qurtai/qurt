@@ -1,5 +1,7 @@
 import { useEffect, useState, createContext } from "react";
+import { useNavigate } from "react-router-dom";
 import LoaderScreen from "@/components/LoaderScreen";
+import { OnboardingPage } from "@/features/onboarding";
 import { AppRoutes } from "./app/routes";
 
 interface AlemContextType {
@@ -15,8 +17,10 @@ export const AlemContext = createContext<AlemContextType>({
 const LOADER_MIN_MS = 1500;
 
 function App() {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<any>({});
   const [ready, setReady] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const started = Date.now();
@@ -26,6 +30,7 @@ function App() {
       if (window.alem) {
         const s = await window.alem.getSettings();
         setSettings(s);
+        setShowOnboarding(!s?.hasSeenOnboarding);
       }
       const elapsed = Date.now() - started;
       const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
@@ -41,13 +46,27 @@ function App() {
     }
   };
 
+  const completeOnboarding = async (options?: { openSettings?: boolean }) => {
+    const nextSettings = { ...settings, hasSeenOnboarding: true };
+    await updateSettings(nextSettings);
+    setShowOnboarding(false);
+
+    if (options?.openSettings) {
+      navigate("/settings");
+    }
+  };
+
   if (!ready) {
     return <LoaderScreen />;
   }
 
   return (
     <AlemContext.Provider value={{ settings, updateSettings }}>
-      <AppRoutes />
+      {showOnboarding ? (
+        <OnboardingPage onComplete={completeOnboarding} />
+      ) : (
+        <AppRoutes />
+      )}
     </AlemContext.Provider>
   );
 }

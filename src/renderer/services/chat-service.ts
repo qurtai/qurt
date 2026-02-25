@@ -23,6 +23,16 @@ export interface ChatHistoryListItem {
   users: string[];
   image?: string;
   isArchived: boolean;
+  /** Workspace path for agent mode; shown as badge when set. */
+  terminalWorkspacePath?: string;
+}
+
+/** Format workspace path for badge display, e.g. /some_repo or /documents. */
+export function formatWorkspaceBadge(path: string | undefined): string | null {
+  if (!path?.trim()) return null;
+  const parts = path.replace(/\\/g, "/").split("/").filter(Boolean);
+  const last = parts.at(-1);
+  return last ? `/${last}` : null;
 }
 
 interface ListChatsOptions {
@@ -195,6 +205,7 @@ export class ChatService {
         users: [DEFAULT_USER_AVATAR],
         image: await resolveImagePreview(getLatestImageFilePart(session.messages)),
         isArchived: session.isArchived,
+        terminalWorkspacePath: session.terminalWorkspacePath,
       })),
     );
   }

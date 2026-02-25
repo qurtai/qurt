@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import Image from "@/components/Image";
 import { Icon } from "@/utils/icons";
-import type { ChatHistoryListItem } from "@/services/chat-service";
+import {
+  type ChatHistoryListItem,
+  formatWorkspaceBadge,
+} from "@/services/chat-service";
 import { DEFAULT_CHAT_TITLE } from "@/stores/chat-store";
 
 type ChatItemProps = {
@@ -24,6 +27,7 @@ function getDisplayLabels(item: ChatHistoryListItem) {
 
 const ChatItem = ({ item, active, onToggleActive }: ChatItemProps) => {
     const { main, sub } = getDisplayLabels(item);
+    const workspaceBadge = formatWorkspaceBadge(item.terminalWorkspacePath);
     return (
         <div className="relative mt-2">
             <button
@@ -57,6 +61,14 @@ const ChatItem = ({ item, active, onToggleActive }: ChatItemProps) => {
                         <div className="mt-1 truncate caption1 text-n-4 dark:text-n-3">
                             {sub}
                         </div>
+                    )}
+                    {workspaceBadge && (
+                        <span
+                            className="mt-1 inline-block caption2 px-1.5 py-0.5 rounded bg-n-3 dark:bg-n-5 text-n-5 dark:text-n-3 truncate max-w-[7rem]"
+                            title={item.terminalWorkspacePath}
+                        >
+                            {workspaceBadge}
+                        </span>
                     )}
                     {item.image && (
                         <div className="relative mt-4 mb-4 aspect-[1.5]">

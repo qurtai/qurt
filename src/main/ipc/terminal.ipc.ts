@@ -1,48 +1,50 @@
-import { app } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { ipcMain } from "electron";
-import { getStore } from "../services/appStore";
 import {
-  getTerminalWorkspaceRoot,
   runTerminal,
   type TerminalRunRequest,
   type TerminalRunResult,
 } from "../services/terminalRunner";
 
+const WORKSPACE_NOT_SET_MESSAGE =
+  "Workspace is not set for this chat. Please select a workspace folder using the button above the input before running terminal or file-patch commands.";
+
 export function registerTerminalIpc(): void {
-  const store = getStore();
-
-  ipcMain.handle("get-terminal-workspace-root", () => {
-    const s = store.get("settings", {}) as Record<string, unknown> & {
-      terminalWorkspaceRoot?: string;
-    };
-    return getTerminalWorkspaceRoot(s) || app.getPath("documents");
-  });
-
   ipcMain.handle(
     "run-terminal",
     async (_event, request: TerminalRunRequest): Promise<TerminalRunResult> => {
-      const s = store.get("settings", {}) as Record<string, unknown> & {
-        terminalWorkspaceRoot?: string;
-      };
-      let root: string;
-      const override = request.workspaceOverride?.trim();
-      if (override) {
-        try {
-          const resolved = path.resolve(override);
-          if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-            root = resolved;
-          } else {
-            root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
-          }
-        } catch {
-          root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
-        }
-      } else {
-        root = getTerminalWorkspaceRoot(s) || app.getPath("documents");
+      const root = request.workspaceRoot?.trim();
+      if (!root) {
+        return {
+          stdout: "",
+          stderr: WORKSPACE_NOT_SET_MESSAGE,
+          outcome: { type: "denied", reason: "workspace not set" },
+          duration_ms: 0,
+          truncated: false,
+        };
       }
-      return runTerminal({ request, workspaceRoot: root });
+      try {
+        const resolved = path.resolve(root);
+        if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+          return {
+            stdout: "",
+            stderr: "Workspace path is invalid or not a directory.",
+            outcome: { type: "denied", reason: "invalid workspace" },
+            duration_ms: 0,
+            truncated: false,
+          };
+        }
+        return runTerminal({ request, workspaceRoot: resolved });
+      } catch {
+        return {
+          stdout: "",
+          stderr: "Workspace path is invalid.",
+          outcome: { type: "denied", reason: "invalid workspace" },
+          duration_ms: 0,
+          truncated: false,
+        };
+      }
     }
   );
 }

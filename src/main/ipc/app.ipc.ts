@@ -11,6 +11,7 @@ export function registerAppIpc(): void {
       providers: {},
       activeProvider: "openai",
       activeModel: "gpt-5-mini",
+      hasSeenOnboarding: false,
       theme: "dark",
       browserAllowedHosts: [],
     });

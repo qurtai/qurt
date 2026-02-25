@@ -117,7 +117,14 @@ export type ConversationDownloadProps = Omit<
 const defaultFormatMessage = (message: ConversationMessage): string => {
   const roleLabel =
     message.role.charAt(0).toUpperCase() + message.role.slice(1);
-  return `**${roleLabel}:** ${message.content}`;
+  return `## ${roleLabel}\n\n${message.content}`;
+};
+
+export type MessagesToMarkdownOptions = {
+  /** Optional YAML frontmatter: title, date, messageCount */
+  frontmatter?: { title?: string; date?: string; messageCount?: number };
+  /** Separator between messages (default: horizontal rule) */
+  separator?: string;
 };
 
 export const messagesToMarkdown = (
@@ -125,8 +132,21 @@ export const messagesToMarkdown = (
   formatMessage: (
     message: ConversationMessage,
     index: number
-  ) => string = defaultFormatMessage
-): string => messages.map((msg, i) => formatMessage(msg, i)).join("\n\n");
+  ) => string = defaultFormatMessage,
+  options?: MessagesToMarkdownOptions
+): string => {
+  const body = messages.map((msg, i) => formatMessage(msg, i)).join("\n\n---\n\n");
+  if (!options?.frontmatter || Object.keys(options.frontmatter).length === 0) {
+    return body;
+  }
+  const { title, date, messageCount } = options.frontmatter;
+  const lines: string[] = ["---"];
+  if (title != null) lines.push(`title: "${title.replace(/"/g, '\\"')}"`);
+  if (date != null) lines.push(`date: "${date}"`);
+  if (messageCount != null) lines.push(`messageCount: ${messageCount}`);
+  lines.push("---", "", body);
+  return lines.join("\n");
+};
 
 export const ConversationDownload = ({
   messages,

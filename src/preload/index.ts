@@ -8,8 +8,8 @@ import { filePatchApi } from "./api/filePatch.api";
 const api = {
   ...appApi,
   openFolderDialog: shellApi.openFolderDialog,
+  openExternal: shellApi.openExternal,
   runTerminal: terminalApi.runTerminal,
-  getTerminalWorkspaceRoot: terminalApi.getTerminalWorkspaceRoot,
   applyFilePatch: filePatchApi.applyFilePatch,
   restoreFilePatchCheckpoint: filePatchApi.restoreCheckpoint,
   restoreFilePatchCheckpoints: filePatchApi.restoreCheckpoints,

@@ -2,12 +2,12 @@ import type { LucideIcon } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import type { ToolSet } from "ai";
 
-export type AiProvider = "openai" | "anthropic" | "google";
+export type AiProvider = "openai" | "anthropic" | "google" | "moonshotai" | "xai";
 
 /** Options passed when building the tool set (e.g. per-chat overrides). */
 export interface ToolSetOptions {
-  /** Per-chat workspace root for terminal; when set, overrides global default. */
-  terminalWorkspaceOverride?: string;
+  /** Per-chat workspace root for terminal and file-patch tools; required in agent mode. */
+  workspaceRoot?: string;
   /** Active chat id for browser tool; one browser window per chat. */
   browserChatId?: string;
 }

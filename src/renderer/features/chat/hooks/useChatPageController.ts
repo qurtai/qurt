@@ -75,7 +75,7 @@ export function useChatPageController() {
     chatId,
     initialMessages,
     onMessagesChange: handleMessagesChange,
-    terminalWorkspaceOverride: activeChat?.terminalWorkspacePath,
+    workspaceRoot: activeChat?.terminalWorkspacePath,
   });
 
   const handleToolApprovalResponse = useToolApproval({

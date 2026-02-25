@@ -102,18 +102,6 @@ class OutputCap {
   }
 }
 
-export function getTerminalWorkspaceRoot(settings: { terminalWorkspaceRoot?: string }): string {
-  const root = settings?.terminalWorkspaceRoot?.trim();
-  if (root) {
-    try {
-      return path.resolve(root);
-    } catch {
-      // fall through to default
-    }
-  }
-  return ""; // caller must substitute with app.getPath("documents") or similar
-}
-
 export interface RunTerminalOptions {
   request: TerminalRunRequest;
   workspaceRoot: string;

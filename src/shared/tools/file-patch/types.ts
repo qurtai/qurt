@@ -8,8 +8,8 @@ export interface FilePatchRequest {
   patch: string;
   /** Optional: path -> sha256 hex. If provided, validated before patching; mismatch rejects that file. */
   base_hashes?: Record<string, string>;
-  /** Per-chat workspace root override; when set, used instead of global default. */
-  workspaceOverride?: string;
+  /** Per-chat workspace root; required for file-patch tool. */
+  workspaceRoot: string;
 }
 
 export interface RejectedOp {

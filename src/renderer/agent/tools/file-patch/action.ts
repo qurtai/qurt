@@ -12,12 +12,6 @@ const filePatchInputSchema = z.object({
     .describe(
       "Optional path -> sha256 hex. If provided, validated before patching; mismatch rejects that file.",
     ),
-  workspaceOverride: z
-    .string()
-    .optional()
-    .describe(
-      "Per-chat workspace root override; when set, used instead of global default.",
-    ),
 });
 
 export type FilePatchToolInput = z.infer<typeof filePatchInputSchema>;
@@ -29,12 +23,15 @@ Provide base_hashes when you know file contents to avoid applying to stale files
 Symlinks are resolved; paths must stay inside the workspace.
 `;
 
+const WORKSPACE_NOT_SET_MESSAGE =
+  "Workspace is not set for this chat. Please select a workspace folder using the button above the input before running terminal or file-patch commands.";
+
 export function getFilePatchToolSet(
   _provider: AiProvider,
   _apiKey: string,
   options?: import("../types").ToolSetOptions
 ): ToolSet {
-  const workspaceOverride = options?.terminalWorkspaceOverride;
+  const workspaceRoot = options?.workspaceRoot?.trim();
   return {
     apply_file_patch: tool({
       description,
@@ -54,15 +51,18 @@ export function getFilePatchToolSet(
             post_hashes: {},
           };
         }
-        const trimmedOverride =
-          typeof workspaceOverride === "string" && workspaceOverride.trim()
-            ? workspaceOverride.trim()
-            : undefined;
-
+        if (!workspaceRoot) {
+          return {
+            status: "error" as const,
+            files_changed: [],
+            rejected_ops: [{ path: "", reason: WORKSPACE_NOT_SET_MESSAGE }],
+            post_hashes: {},
+          };
+        }
         const request: FilePatchRequest = {
           patch: input.patch,
           base_hashes: input.base_hashes,
-          ...(trimmedOverride && { workspaceOverride: trimmedOverride }),
+          workspaceRoot,
         };
         return window.alem.applyFilePatch(
           request

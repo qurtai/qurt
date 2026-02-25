@@ -15,8 +15,10 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",
     "@ai-sdk/google": "^3.0.30",
+    "@ai-sdk/moonshotai": "^2.0.5",
     "@ai-sdk/openai": "^3.0.30",
     "@ai-sdk/react": "^3.0.88",
+    "@ai-sdk/xai": "^3.0.59",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",

@@ -1,7 +1,9 @@
 import { ToolSet, type LanguageModel, type UIMessage } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createMoonshotAI } from "@ai-sdk/moonshotai";
 import { createOpenAI } from "@ai-sdk/openai";
+import { createXai } from "@ai-sdk/xai";
 import {
   PROVIDERS,
   DEFAULT_ENABLED_MODELS,
@@ -10,7 +12,7 @@ import {
   type ProviderModelInfo,
 } from "@/constants/providers";
 
-export type AiProvider = "openai" | "anthropic" | "google";
+export type AiProvider = "openai" | "anthropic" | "google" | "moonshotai" | "xai";
 
 type JsonValue =
   | string
@@ -24,7 +26,7 @@ type JsonValue =
  * Configuration for agent tools
  */
 export interface ToolConfig {
-  terminalWorkspaceOverride?: string;
+  workspaceRoot?: string;
   browserChatId?: string;
 }
 
@@ -47,6 +49,8 @@ export interface ResolvedModelConfig {
   reasoningEffort?: ProviderModelInfo["reasoningEffort"];
   googleThinkingLevel?: ProviderModelInfo["googleThinkingLevel"];
   anthropicThinkingBudgetTokens?: ProviderModelInfo["anthropicThinkingBudgetTokens"];
+  xaiReasoningEffort?: ProviderModelInfo["xaiReasoningEffort"];
+  moonshotaiThinkingBudgetTokens?: ProviderModelInfo["moonshotaiThinkingBudgetTokens"];
   isReasoning: boolean;
 }
 
@@ -91,7 +95,13 @@ export class ProviderService {
    * Validate provider ID and return it, or return default
    */
   validateProvider(providerId: string | undefined, defaultProvider: AiProvider = "openai"): AiProvider {
-    if (providerId === "openai" || providerId === "anthropic" || providerId === "google") {
+    if (
+      providerId === "openai" ||
+      providerId === "anthropic" ||
+      providerId === "google" ||
+      providerId === "moonshotai" ||
+      providerId === "xai"
+    ) {
       return providerId;
     }
     return defaultProvider;
@@ -102,6 +112,14 @@ export class ProviderService {
    */
   getProvider(providerId: string): ProviderInfo | undefined {
     return PROVIDERS.find((p) => p.id === providerId);
+  }
+
+  /**
+   * Get logo path for a provider (from public folder)
+   */
+  getProviderLogo(providerId: string): string {
+    const provider = this.getProvider(providerId);
+    return provider?.logoPath ?? "/provider-logos/openai.svg";
   }
 
   /**
@@ -136,10 +154,14 @@ export class ProviderService {
       reasoningEffort: resolved.reasoningEffort,
       googleThinkingLevel: resolved.googleThinkingLevel,
       anthropicThinkingBudgetTokens: resolved.anthropicThinkingBudgetTokens,
+      xaiReasoningEffort: resolved.xaiReasoningEffort,
+      moonshotaiThinkingBudgetTokens: resolved.moonshotaiThinkingBudgetTokens,
       isReasoning: !!(
         resolved.reasoningEffort ||
         resolved.googleThinkingLevel ||
-        resolved.anthropicThinkingBudgetTokens
+        resolved.anthropicThinkingBudgetTokens ||
+        resolved.xaiReasoningEffort ||
+        resolved.moonshotaiThinkingBudgetTokens
       ),
     };
   }
@@ -162,6 +184,10 @@ createChatModel(provider: AiProvider, model: string, apiKey: string): LanguageMo
         return createAnthropic({ apiKey })(model);
       case "google":
         return createGoogleGenerativeAI({ apiKey })(model);
+      case "moonshotai":
+        return createMoonshotAI({ apiKey })(model);
+      case "xai":
+        return createXai({ apiKey })(model);
       default:
         throw new Error(`Unsupported provider: ${provider}`);
     }
@@ -198,6 +224,22 @@ createChatModel(provider: AiProvider, model: string, apiKey: string): LanguageMo
       };
     }
 
+    if (config.xaiReasoningEffort) {
+      optionsMap.xai = {
+        reasoningEffort: config.xaiReasoningEffort,
+      };
+    }
+
+    if (config.moonshotaiThinkingBudgetTokens) {
+      optionsMap.moonshotai = {
+        thinking: {
+          type: "enabled",
+          budgetTokens: config.moonshotaiThinkingBudgetTokens,
+        },
+        reasoningHistory: "interleaved",
+      };
+    }
+
     return Object.keys(optionsMap).length > 0 ? optionsMap : undefined;
   }
 
@@ -230,6 +272,10 @@ createChatModel(provider: AiProvider, model: string, apiKey: string): LanguageMo
           }),
         } as ToolSet;
       }
+      case "moonshotai":
+      case "xai":
+        // No native client-side web search tool; agent still has terminal, file patch, browser
+        return {} as ToolSet;
       default:
         throw new Error(`Unsupported provider for web search: ${provider}`);
     }
@@ -239,7 +285,6 @@ createChatModel(provider: AiProvider, model: string, apiKey: string): LanguageMo
    * Get max tokens for a model
    */
   getMaxTokens(providerId: string, modelId: string): number {
-    const modelInfo = this.getModelInfo(providerId, modelId);
     
     // Default max tokens based on model family
     if (modelId?.includes("gpt-5")) {
@@ -256,6 +301,14 @@ createChatModel(provider: AiProvider, model: string, apiKey: string): LanguageMo
     if (modelId?.includes("gemini")) {
       if (modelId?.includes("flash")) return 1000000;
       return 2000000; // Pro
+    }
+    
+    if (modelId?.includes("kimi")) {
+      return 256000; // Kimi K2/K2.5 context
+    }
+    
+    if (modelId?.includes("grok")) {
+      return 128000; // Grok 4 family
     }
     
     // Default fallback
@@ -302,13 +355,14 @@ createChatModel(provider: AiProvider, model: string, apiKey: string): LanguageMo
     // Basic length checks per provider
     switch (provider) {
       case "openai":
-        // OpenAI keys typically start with "sk-" and are at least 20 chars
         return apiKey.length >= 20;
       case "anthropic":
-        // Anthropic keys typically start with "sk-ant-" and are at least 30 chars
         return apiKey.length >= 30;
       case "google":
-        // Google API keys are typically at least 20 chars
+        return apiKey.length >= 20;
+      case "moonshotai":
+        return apiKey.length >= 20;
+      case "xai":
         return apiKey.length >= 20;
       default:
         return apiKey.length > 0;
@@ -323,6 +377,8 @@ createChatModel(provider: AiProvider, model: string, apiKey: string): LanguageMo
       openai: "OpenAI",
       anthropic: "Anthropic",
       google: "Google",
+      moonshotai: "Moonshot AI",
+      xai: "xAI",
     };
     return names[provider];
   }
