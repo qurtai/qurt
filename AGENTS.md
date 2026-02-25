@@ -39,6 +39,11 @@ Notes:
 - Chat persistence: Dexie in `src/renderer/db/` (chats.repo, chat-groups.repo); `src/renderer/services/chat-service.ts`
 - Attachment storage: `src/main/services/fileStore.ts`
 
+## UI And Typography
+
+- Use Radix-based primitives from `src/renderer/shared/components/ui/` for new controls.
+- Typography: Inter font family; prefer semantic classes (`.base1`, `.base2`, `.caption1`, etc.) over raw `text-sm`/`text-base`. See `docs/FRONTEND.md` for the typography scale.
+
 ## Repository Conventions
 
 - Use path aliases (`@/components`, `@/services`, etc.) when available.

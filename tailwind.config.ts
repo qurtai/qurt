@@ -108,10 +108,8 @@ const config: Config = {
     			DEFAULT: 'linear'
     		},
     		fontFamily: {
-    			sans: [
-    				'var(--font-karla)'
-    			],
-    			inter: 'var(--font-inter)'
+    			sans: ['var(--font-inter)'],
+    			inter: 'var(--font-inter)',
     		},
     		fontSize: {
     			'0': [
@@ -195,7 +193,6 @@ const config: Config = {
     	}
     },
     plugins: [
-        require("@headlessui/tailwindcss")({ prefix: "ui" }),
         require("tailwind-scrollbar"),
         iOSHeight,
         plugin(function ({ addBase, addComponents, addUtilities }:any) {
@@ -210,52 +207,52 @@ const config: Config = {
             });
             addComponents({
                 ".h1": {
-                    "@apply font-inter text-6xl font-bold -tracking-[.025em]":
-                        {},
-                },
-                ".h2": {
                     "@apply font-inter text-5xl font-bold -tracking-[.025em]":
                         {},
                 },
+                ".h2": {
+                    "@apply font-inter text-4xl font-bold -tracking-[.025em]":
+                        {},
+                },
                 ".h3": {
-                    "@apply font-inter text-4xl font-bold -tracking-[.045em]":
+                    "@apply font-inter text-3xl font-bold -tracking-[.045em]":
                         {},
                 },
                 ".h4": {
-                    "@apply font-inter text-3xl font-bold -tracking-[.02em]":
+                    "@apply font-inter text-2xl font-bold -tracking-[.02em]":
                         {},
                 },
                 ".h5": {
-                    "@apply font-inter text-2xl font-semibold -tracking-[.03em]":
-                        {},
-                },
-                ".h6": {
                     "@apply font-inter text-xl font-semibold -tracking-[.03em]":
                         {},
                 },
+                ".h6": {
+                    "@apply font-inter text-[1.125rem] font-semibold leading-tight -tracking-[.03em]":
+                        {},
+                },
                 ".body1": {
-                    "@apply text-[1.5rem] leading-9 -tracking-[.03em]": {},
+                    "@apply text-[1.375rem] leading-8 -tracking-[.03em]": {},
                 },
                 ".body1S": {
-                    "@apply text-[1.375rem] leading-7 -tracking-[.02em]": {},
+                    "@apply text-[1.25rem] leading-7 -tracking-[.02em]": {},
                 },
                 ".body2": {
-                    "@apply text-[1.0625rem] leading-6 -tracking-[.01em]": {},
+                    "@apply text-[1rem] leading-6 -tracking-[.01em]": {},
                 },
                 ".base1": {
-                    "@apply font-inter text-[1rem] leading-6 font-medium -tracking-[.03em]":
+                    "@apply font-inter text-[0.9375rem] leading-5 font-medium -tracking-[.03em]":
                         {},
                 },
                 ".base2": {
-                    "@apply font-inter text-[0.875rem] leading-6 font-medium -tracking-[.02em]":
+                    "@apply font-inter text-[0.8125rem] leading-5 font-medium -tracking-[.02em]":
                         {},
                 },
                 ".caption1": {
-                    "@apply font-inter text-[0.75rem] leading-5 font-medium -tracking-[.03em]":
+                    "@apply font-inter text-[0.6875rem] leading-4 font-medium -tracking-[.03em]":
                         {},
                 },
                 ".caption2": {
-                    "@apply font-inter text-[0.6875rem] leading-4 font-medium -tracking-[.01em]":
+                    "@apply font-inter text-[0.625rem] leading-4 font-medium -tracking-[.01em]":
                         {},
                 },
                 ".btn": {

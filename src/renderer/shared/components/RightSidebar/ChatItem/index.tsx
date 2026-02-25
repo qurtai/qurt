@@ -27,7 +27,7 @@ const ChatItem = ({ item, active, onToggleActive }: ChatItemProps) => {
     return (
         <div className="relative mt-2">
             <button
-                className={`absolute z-1 top-3 left-3 flex justify-center items-center border-2 border-n-4/50 w-5.5 h-5.5 rounded-md transition-colors ${
+                className={`absolute z-1 top-3 left-3 flex justify-center items-center border-2 border-n-4/50 dark:border-n-3 w-5.5 h-5.5 rounded-md transition-colors ${
                     active && "border-primary-1 bg-primary-1"
                 }`}
                 onClick={() => onToggleActive(item.id)}
@@ -49,12 +49,12 @@ const ChatItem = ({ item, active, onToggleActive }: ChatItemProps) => {
                         <div className="base1 font-semibold dark:text-n-1 min-w-0 flex-1 truncate">
                             {main}
                         </div>
-                        <span className="caption1 text-n-4 shrink-0">
+                        <span className="caption1 text-n-4 dark:text-n-3 shrink-0">
                             {item.time}
                         </span>
                     </div>
                     {sub !== null && (
-                        <div className="mt-1 truncate caption1 text-n-4">
+                        <div className="mt-1 truncate caption1 text-n-4 dark:text-n-3">
                             {sub}
                         </div>
                     )}

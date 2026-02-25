@@ -12,22 +12,19 @@ import {
 } from "@/components/ai-elements/checkpoint";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { getRestoreContextForUserMessage } from "@/services/checkpoint-service";
 import { getAttachmentIdFromUrl } from "../utils/messageParts";
 import type { UIMessage } from "ai";
 
 type UserMessageItemProps = {
   message: UIMessage;
-  messageIndex: number;
-  messages: UIMessage[];
+  showRestoreCheckpoint: boolean;
   onOpenAttachment: (attachmentId: string) => void;
-  onRestoreCheckpoint: (userMessageIndex: number) => void;
+  onRestoreCheckpoint?: () => void;
 };
 
 export function UserMessageItem({
   message,
-  messageIndex,
-  messages,
+  showRestoreCheckpoint,
   onOpenAttachment,
   onRestoreCheckpoint,
 }: UserMessageItemProps) {
@@ -46,10 +43,6 @@ export function UserMessageItem({
     type: "file",
     url: fp.url.startsWith("data:") ? fp.url : "",
   }));
-
-  const restoreCtx = getRestoreContextForUserMessage(messages, messageIndex);
-  const showRestoreCheckpoint =
-    restoreCtx !== null && restoreCtx.checkpointIds.length > 0;
 
   return (
     <Message from="user" key={message.id}>
@@ -70,12 +63,12 @@ export function UserMessageItem({
           </Attachments>
         )}
         {!!text && <div className="whitespace-pre-wrap">{text}</div>}
-        {showRestoreCheckpoint && restoreCtx && (
+        {showRestoreCheckpoint && onRestoreCheckpoint && (
           <TooltipProvider>
             <Checkpoint className="mt-3">
               <CheckpointIcon />
               <CheckpointTrigger
-                onClick={() => onRestoreCheckpoint(restoreCtx.userMessageIndex)}
+                onClick={onRestoreCheckpoint}
                 tooltip="Restore files to state before this message"
               >
                 Restore checkpoint

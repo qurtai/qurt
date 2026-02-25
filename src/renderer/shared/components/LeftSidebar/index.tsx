@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Tab } from "@headlessui/react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
@@ -256,33 +256,32 @@ const LeftSidebar = ({
                         <div className="mb-12 body1 text-n-4 md:mb-6">
                             Features, fixes & improvements.
                         </div>
-                        <Tab.Group defaultIndex={0}>
-                            <Tab.List className="mb-12 md:mb-6 space-x-3">
-                                {updatesFaqTabNavigation.map((button) => (
-                                    <Tab
-                                        className="h-10 px-6 rounded-full base1 text-n-4 transition-colors outline-none tap-highlight-color hover:text-n-7 ui-selected:bg-primary-1 ui-selected:!text-n-1 dark:hover:text-n-1"
-                                        key={button}
+                        <Tabs defaultValue="Updates" className="w-full">
+                            <TabsList className="mb-12 md:mb-6 h-auto p-0 bg-transparent gap-3">
+                                {updatesFaqTabNavigation.map((tab) => (
+                                    <TabsTrigger
+                                        key={tab}
+                                        value={tab}
+                                        className="h-10 px-6 rounded-full base1 text-n-4 transition-colors outline-none tap-highlight-color hover:text-n-7 data-[state=active]:bg-primary-1 data-[state=active]:!text-n-1 dark:hover:text-n-1"
                                     >
-                                        {button}
-                                    </Tab>
+                                        {tab}
+                                    </TabsTrigger>
                                 ))}
-                            </Tab.List>
-                            <Tab.Panels>
-                                <Tab.Panel>
-                                    <Updates items={updateItems} />
-                                </Tab.Panel>
-                                <Tab.Panel>
-                                    <Faq items={faqItems} />
-                                </Tab.Panel>
-                            </Tab.Panels>
-                        </Tab.Group>
+                            </TabsList>
+                            <TabsContent value="Updates">
+                                <Updates items={updateItems} />
+                            </TabsContent>
+                            <TabsContent value="FAQ">
+                                <Faq items={faqItems} />
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </div>
             </Modal>
             <Modal
                 className="md:!p-0"
                 classWrap="md:min-h-screen-ios md:rounded-none dark:shadow-[inset_0_0_0_0.0625rem_#232627,0_2rem_4rem_-1rem_rgba(0,0,0,0.33)] dark:md:shadow-none"
-                classButtonClose="hidden md:flex md:absolute md:top-6 md:left-6 dark:fill-n-1"
+                classButtonClose="absolute top-5 right-5 flex items-center justify-center w-10 h-10 rounded-full fill-n-4 hover:fill-primary-1 hover:bg-n-2 dark:fill-n-1 dark:hover:bg-n-6 md:top-6 md:right-6"
                 classOverlay="md:bg-n-1"
                 visible={visibleSearch}
                 onClose={() => setVisibleSearch(false)}
@@ -292,7 +291,7 @@ const LeftSidebar = ({
             <Modal
                 className="md:!p-0"
                 classWrap="max-w-[48rem] md:min-h-screen-ios md:rounded-none"
-                classButtonClose="hidden md:block md:absolute md:top-5 md:right-5 dark:fill-n-4"
+                classButtonClose="absolute top-5 right-5 flex items-center justify-center w-10 h-10 rounded-full fill-n-4 hover:fill-primary-1 hover:bg-n-2 dark:fill-n-4 dark:hover:bg-n-6 md:top-6 md:right-6"
                 classOverlay="md:bg-n-1"
                 visible={visibleSettings}
                 onClose={() => setVisibleSettings(false)}

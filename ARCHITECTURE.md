@@ -22,10 +22,11 @@ System architecture for `alem`.
    - split by domain: `src/preload/api/*.api.ts`, composed in `src/preload/index.ts`
 3. **Renderer (React + Vite)** (`src/renderer/`)
    - routes, UI, chat workflows, settings
+   - **UI system**: Radix UI primitives in `src/renderer/shared/components/ui/`; typography unified to Inter; legacy wrappers (Select, Modal, Actions, Switch, Checkbox, Radio) are Radix-backed adapters
    - left sidebar owns shared quick actions (search, updates, notifications, settings) across home/chat
    - checkpoint restore: `src/renderer/stores/checkpoint-store.ts`, `src/renderer/services/checkpoint-service.ts`
-   - ChatPage: `useChatPageController`, `ChatMessages`, `ToolStepItem`, `tool-approval-service`
-   - files: `src/renderer/main.tsx`, `src/renderer/App.tsx`, `src/renderer/pages/**`, `src/renderer/shared/components/**`
+   - ChatPage: thin composition; `useChatPageController` orchestrates `useChatRouteState`, `useChatSession`, `useChatRuntime`, `useChatMetrics`, `useCheckpointRestoreFlow`, `useBrowserChatBinding`; `ChatMessages`, `ToolStepItem`, `tool-approval-service`
+   - files: `src/renderer/main.tsx`, `src/renderer/App.tsx`, `src/renderer/features/**`, `src/renderer/shared/components/**`
 
 ## Directory Map
 

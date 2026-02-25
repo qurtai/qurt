@@ -1,5 +1,4 @@
-import { Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { twMerge } from "tailwind-merge";
 import { Icon } from "@/utils/icons";
 
@@ -10,7 +9,7 @@ type ModalProps = {
     classButtonClose?: string;
     visible: boolean;
     onClose: () => void;
-    initialFocus?: any;
+    initialFocus?: React.RefObject<HTMLDivElement | null>;
     children: React.ReactNode;
     video?: boolean;
 };
@@ -22,69 +21,55 @@ const Modal = ({
     classButtonClose,
     visible,
     onClose,
-    initialFocus,
     children,
     video,
 }: ModalProps) => {
     return (
-        <Transition show={visible} as={Fragment}>
-            <Dialog
-                initialFocus={initialFocus}
-                className={`fixed inset-0 z-50 flex p-6 overflow-auto scroll-smooth md:px-4 ${className}`}
-                onClose={onClose}
-            >
-                <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
+        <DialogPrimitive.Root open={visible} onOpenChange={(open) => !open && onClose()}>
+            <DialogPrimitive.Portal>
+                <DialogPrimitive.Overlay
+                    className={twMerge(
+                        "fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                        video ? "bg-n-7/95" : "bg-n-7/75 dark:bg-n-6/90",
+                        classOverlay
+                    )}
+                    aria-hidden="true"
+                />
+                <DialogPrimitive.Content
+                    className={twMerge(
+                        "fixed inset-0 z-50 flex p-6 overflow-auto scroll-smooth md:px-4 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+                        !video && "data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-top-[48%]",
+                        className
+                    )}
+                    onEscapeKeyDown={onClose}
+                    onPointerDownOutside={onClose}
+                    onInteractOutside={onClose}
                 >
                     <div
-                        className={`fixed inset-0 ${
-                            video ? "bg-n-7/95" : "bg-n-7/75 dark:bg-n-6/90"
-                        } ${classOverlay}`}
-                        aria-hidden="true"
-                    />
-                </Transition.Child>
-                <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom={`opacity-0 ${!video && "scale-95"}`}
-                    enterTo={`opacity-100 ${!video && "scale-100"}`}
-                    leave="ease-in duration-200"
-                    leaveFrom={`opacity-100 ${!video && "scale-100"}`}
-                    leaveTo={`opacity-0 ${!video && "scale-95"}`}
-                >
-                    <Dialog.Panel
                         className={twMerge(
-                            `relative z-10 max-w-[37.5rem] w-full m-auto bg-n-1 rounded-3xl dark:bg-n-7 ${
-                                video &&
-                                "static max-w-[64rem] aspect-video rounded-[1.25rem] bg-n-7 overflow-hidden shadow-[0_2.5rem_8rem_rgba(0,0,0,0.5)]"
-                            } ${classWrap}`
+                            "relative z-10 max-w-[37.5rem] w-full m-auto bg-n-1 rounded-3xl dark:bg-n-7",
+                            video &&
+                                "static max-w-[64rem] aspect-video rounded-[1.25rem] bg-n-7 overflow-hidden shadow-[0_2.5rem_8rem_rgba(0,0,0,0.5)]",
+                            classWrap
                         )}
                     >
                         {children}
-                        <button
+                        <DialogPrimitive.Close
                             className={twMerge(
-                                `text-0 fill-n-7 hover:fill-primary-1 ${
-                                    video &&
-                                    "absolute top-6 right-6 w-10 h-10 bg-n-1 rounded-full"
-                                } ${classButtonClose}`
+                                "text-0 fill-n-7 hover:fill-primary-1",
+                                video && "absolute top-6 right-6 w-10 h-10 bg-n-1 rounded-full",
+                                classButtonClose
                             )}
-                            onClick={onClose}
                         >
                             <Icon
                                 className="stroke-current transition-colors"
                                 name="close"
                             />
-                        </button>
-                    </Dialog.Panel>
-                </Transition.Child>
-            </Dialog>
-        </Transition>
+                        </DialogPrimitive.Close>
+                    </div>
+                </DialogPrimitive.Content>
+            </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
     );
 };
 

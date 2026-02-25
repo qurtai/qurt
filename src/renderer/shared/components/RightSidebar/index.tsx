@@ -112,7 +112,7 @@ const RightSidebar = ({ className, visible }: RightSidebarProps) => {
             )}
         >
             <div className="absolute top-0 left-0 right-0 flex items-center h-18 px-9 border-b border-n-3 lg:pr-18 md:pr-16 dark:border-n-5">
-                <div className="base2 text-n-4/75">Chat history</div>
+                <div className="base2 text-n-4/75 dark:text-n-3">Chat history</div>
                 <div className="ml-3 px-2 bg-n-3 rounded-lg caption1 text-n-4 dark:bg-n-5/50">
                     {isLoading ? "..." : chatItems.length}
                 </div>

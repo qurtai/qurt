@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { Disclosure, Transition } from "@headlessui/react";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { twMerge } from "tailwind-merge";
 import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
@@ -36,27 +40,19 @@ const ChatGroup = ({
     return (
         <>
             <div className="mb-auto pb-6">
-                <Disclosure defaultOpen={true}>
-                    <Disclosure.Button
-                        className={`flex items-center w-full h-12 text-left base2 text-n-4/75 transition-colors hover:text-n-3 ${
+                <Collapsible defaultOpen={true}>
+                    <CollapsibleTrigger
+                        className={`flex items-center w-full h-12 text-left base2 text-n-4/75 transition-colors hover:text-n-3 group ${
                             visible ? "justify-center px-3" : "px-5"
                         }`}
                     >
                         <Icon
-                            className="stroke-n-4 transition-transform ui-open:rotate-180"
+                            className="stroke-n-4 transition-transform group-data-[state=open]:rotate-180"
                             name="arrow-down"
                         />
                         {!visible && <div className="ml-5">Chat groups</div>}
-                    </Disclosure.Button>
-                    <Transition
-                        enter="transition duration-100 ease-out"
-                        enterFrom="transform scale-95 opacity-0"
-                        enterTo="transform scale-100 opacity-100"
-                        leave="transition duration-75 ease-out"
-                        leaveFrom="transform scale-100 opacity-100"
-                        leaveTo="transform scale-95 opacity-0"
-                    >
-                        <Disclosure.Panel className={`${visible && "px-2"}`}>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className={`${visible ? "px-2" : ""}`}>
                             {items.map((item) => (
                                 <button
                                     type="button"
@@ -91,9 +87,8 @@ const ChatGroup = ({
                                     )}
                                 </button>
                             ))}
-                        </Disclosure.Panel>
-                    </Transition>
-                </Disclosure>
+                    </CollapsibleContent>
+                </Collapsible>
                 <button
                     className={`group flex items-center w-full h-12 text-left base2 text-n-3/75 transition-colors hover:text-n-3 ${
                         visible ? "justify-center px-3" : "px-5"

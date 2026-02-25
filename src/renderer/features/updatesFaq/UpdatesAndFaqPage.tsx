@@ -1,4 +1,4 @@
-import { Tab } from "@headlessui/react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -52,26 +52,25 @@ const UpdatesAndFaqPage = () => {
           <div className="mb-12 body1 text-n-4 md:mb-6">
             Features, fixes & improvements.
           </div>
-          <Tab.Group defaultIndex={0}>
-            <Tab.List className="mb-12 md:mb-6 space-x-3">
-              {tabNavigation.map((button) => (
-                <Tab
-                  className="h-10 px-6 rounded-full base1 text-n-4 transition-colors outline-none tap-highlight-color hover:text-n-7 ui-selected:bg-primary-1 ui-selected:!text-n-1 dark:hover:text-n-1"
-                  key={button}
+          <Tabs defaultValue="Updates" className="w-full">
+            <TabsList className="mb-12 md:mb-6 h-auto p-0 bg-transparent gap-3">
+              {tabNavigation.map((tab) => (
+                <TabsTrigger
+                  key={tab}
+                  value={tab}
+                  className="h-10 px-6 rounded-full base1 text-n-4 transition-colors outline-none tap-highlight-color hover:text-n-7 data-[state=active]:bg-primary-1 data-[state=active]:!text-n-1 dark:hover:text-n-1"
                 >
-                  {button}
-                </Tab>
+                  {tab}
+                </TabsTrigger>
               ))}
-            </Tab.List>
-            <Tab.Panels>
-              <Tab.Panel>
-                <Updates items={updateItems} />
-              </Tab.Panel>
-              <Tab.Panel>
-                <Faq items={faqItems} />
-              </Tab.Panel>
-            </Tab.Panels>
-          </Tab.Group>
+            </TabsList>
+            <TabsContent value="Updates">
+              <Updates items={updateItems} />
+            </TabsContent>
+            <TabsContent value="FAQ">
+              <Faq items={faqItems} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </Layout>

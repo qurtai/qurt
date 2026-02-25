@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Karla:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,11 +6,10 @@
 
 :root {
   --font-inter: 'Inter', sans-serif;
-  --font-karla: 'Karla', sans-serif;
 }
 
 body {
-  font-family: var(--font-karla), sans-serif;
+  font-family: var(--font-inter), sans-serif;
 }
 
 @layer components {
@@ -176,7 +175,8 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
-  .dark {
+  .dark,
+  [data-theme="dark"] {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;

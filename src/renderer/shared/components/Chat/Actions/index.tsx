@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-import { Menu, Transition } from "@headlessui/react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Icon } from "@/utils/icons";
 import Modal from "@/components/Modal";
 import ModalShareChat from "@/components/ModalShareChat";
@@ -183,51 +188,50 @@ const Actions = ({ chatId, chatGroupIds }: ActionsProps) => {
     return (
         <>
             <div className="relative z-10 ml-6 md:ml-4">
-                <Menu>
-                    <Menu.Button className="group relative w-8 h-8">
-                        <Icon
-                            className="stroke-n-4 transition-colors group-hover:stroke-primary-1 ui-open:!stroke-primary-1"
-                            name="dots"
-                        />
-                    </Menu.Button>
-                    <Transition
-                        enter="transition duration-100 ease-out"
-                        enterFrom="transform scale-95 opacity-0"
-                        enterTo="transform scale-100 opacity-100"
-                        leave="transition duration-75 ease-out"
-                        leaveFrom="transform scale-100 opacity-100"
-                        leaveTo="transform scale-95 opacity-0"
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button
+                            type="button"
+                            className="group relative w-8 h-8 data-[state=open]:[&_svg]:stroke-primary-1"
+                        >
+                            <Icon
+                                className="stroke-n-4 transition-colors group-hover:stroke-primary-1"
+                                name="dots"
+                            />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        align="end"
+                        className="w-[13.75rem] p-3"
                     >
-                        <Menu.Items className="absolute top-full right-0 w-[13.75rem] mt-1 p-3 bg-n-1 rounded-[1.25rem] shadow-[0_0_1rem_0.25rem_rgba(0,0,0,0.04),0_2rem_2rem_-1rem_rgba(0,0,0,0.1)] outline-none dark:bg-n-7 dark:border dark:border-n-5">
-                            <div className="space-y-2">
-                                {menu.map((item, index) => (
-                                    <Menu.Item key={index}>
-                                        <button
-                                            className="group flex items-center w-full h-12 px-3 rounded-lg base1 font-semibold transition-colors text-n-4 hover:bg-n-2 hover:text-n-7 dark:hover:bg-n-6 dark:hover:text-n-1"
-                                            onClick={item.onClick}
-                                        >
-                                            <Icon
-                                                className={`shrink-0 mr-3 stroke-n-4 transition-colors group-hover:stroke-n-7 dark:group-hover:stroke-n-1 ${
-                                                    item.id === "0" &&
-                                                    favorite &&
-                                                    "!stroke-accent-5"
-                                                }`}
-                                                name={
-                                                    item.id === "0"
-                                                        ? favorite
-                                                            ? "star-fill"
-                                                            : item.icon
-                                                        : item.icon
-                                                }
-                                            />
-                                            {item.title}
-                                        </button>
-                                    </Menu.Item>
-                                ))}
-                            </div>
-                        </Menu.Items>
-                    </Transition>
-                </Menu>
+                        {menu.map((item, index) => (
+                            <DropdownMenuItem
+                                key={index}
+                                className="h-12 px-3 rounded-lg base1 font-semibold cursor-pointer"
+                                onSelect={(e) => {
+                                    e.preventDefault();
+                                    item.onClick();
+                                }}
+                            >
+                                <Icon
+                                    className={`shrink-0 mr-3 stroke-n-4 ${
+                                        item.id === "0" && favorite
+                                            ? "!stroke-accent-5"
+                                            : ""
+                                    }`}
+                                    name={
+                                        item.id === "0"
+                                            ? favorite
+                                                ? "star-fill"
+                                                : item.icon
+                                            : item.icon
+                                    }
+                                />
+                                {item.title}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <Modal
                 className="md:!p-0"

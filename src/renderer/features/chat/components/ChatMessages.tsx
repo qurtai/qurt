@@ -1,4 +1,5 @@
 import { Message, MessageContent } from "@/components/ai-elements/message";
+import { getRestoreContextForUserMessage } from "@/services/checkpoint-service";
 import { UserMessageItem } from "./UserMessageItem";
 import { AssistantMessageItem } from "./AssistantMessageItem";
 import type { ToolApprovalResponseParams } from "../hooks/useChatPageController";
@@ -34,14 +35,20 @@ export function ChatMessages({
     <>
       {messages.map((message, index) => {
         if (message.role === "user") {
+          const restoreCtx = getRestoreContextForUserMessage(messages, index);
+          const showRestoreCheckpoint =
+            restoreCtx !== null && restoreCtx.checkpointIds.length > 0;
           return (
             <UserMessageItem
               key={message.id}
               message={message}
-              messageIndex={index}
-              messages={messages}
+              showRestoreCheckpoint={showRestoreCheckpoint}
               onOpenAttachment={onOpenAttachment}
-              onRestoreCheckpoint={onRestoreCheckpoint}
+              onRestoreCheckpoint={
+                showRestoreCheckpoint && restoreCtx
+                  ? () => onRestoreCheckpoint(restoreCtx.userMessageIndex)
+                  : undefined
+              }
             />
           );
         }

@@ -20,3 +20,7 @@ Track debt items with impact and remediation plans.
 - Link related execution plans in `active/`.
 - Move finalized plan docs to `completed/` with short outcome summaries.
 - Refactor continuation (2026-02): Config alignment, shared tool contracts, tree cleanup, and docs parity completed. See `docs/exec-plans/completed/refactor-continuation-2026-02.md` for outcome summary.
+- Chat feature architecture (2026-02): Split monolithic `useChatPageController` into focused hooks (`useChatRouteState`, `useChatSession`, `useChatRuntime`, `useChatMetrics`, `useCheckpointRestoreFlow`, `useBrowserChatBinding`); moved message-part helpers to `@/lib/chat/messageParts`; made `UserMessageItem` and `ToolStepItem` presentational.
+- UI consistency (2026-02): Unified typography to Inter; migrated all HeadlessUI usage to Radix primitives; legacy Select, Modal, Actions, Switch, Checkbox, Radio are now Radix-backed adapters; removed `@headlessui/react` and `@headlessui/tailwindcss`; see `docs/FRONTEND.md` for typography usage.
+- Dark theme (2026-02): Added `[data-theme="dark"]` selector to `globals.css` so CSS variables apply when Chakra uses data-theme; improved chat history checkbox and secondary text contrast in dark mode; documented dark theme usage in `docs/FRONTEND.md`.
+- Component cleanup (2026-02): Removed unused legacy components (Export, Adjust, Users, Feedback, AddChatList, Question, Menu) and `constants/export.tsx`; kept `ui/` and `ai-elements/` as requested.

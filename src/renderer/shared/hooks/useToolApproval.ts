@@ -6,7 +6,7 @@ import {
   addToolToChatRules,
   extractBrowserHosts,
 } from "@/services/tool-approval-service";
-import { getToolPartName } from "@/features/chat";
+import { getToolPartName } from "@/lib/chat/messageParts";
 import type { ChatSession } from "@/services/chat-service";
 import type { UIMessage } from "ai";
 

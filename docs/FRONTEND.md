@@ -46,6 +46,28 @@ Frontend implementation guide for `alem`.
 4. chat message stores attachment metadata
 5. AI service resolves attachment data for model calls
 
+## Typography
+
+The app uses **Inter** as the single font family. Typography classes are defined in `tailwind.config.ts`:
+
+| Class | Use case | Size |
+|-------|----------|------|
+| `.h1`–`.h6` | Headings | 3.5rem down to 1rem |
+| `.body1`, `.body1S`, `.body2` | Body text | 1.375rem, 1.25rem, 1rem |
+| `.base1`, `.base2` | UI labels, controls | 0.9375rem, 0.8125rem |
+| `.caption1`, `.caption2` | Meta, secondary text | 0.6875rem, 0.625rem |
+
+Prefer these semantic classes over raw `text-sm`/`text-base` for consistency. Use `font-sans` (Inter) for default text.
+
+## Dark Theme
+
+Dark mode is driven by Chakra UI’s `useColorMode` and applied via `data-theme="dark"` or `.dark` on an ancestor. Tailwind’s `dark:` variant is configured with `darkMode: ["class", '[data-theme="dark"]']` in `tailwind.config.ts`.
+
+- **CSS variables**: `globals.css` defines dark-mode tokens under both `.dark` and `[data-theme="dark"]` so semantic colors (`--foreground`, `--muted-foreground`, etc.) work regardless of how dark mode is triggered.
+- **Alem palette**: Use `n-1`–`n-7` for backgrounds and text; in dark mode, `n-1` is lightest, `n-7` darkest. Prefer `dark:text-n-1`, `dark:bg-n-6`, `dark:border-n-5` for consistent contrast.
+- **User message bubbles**: `dark:bg-n-5/50`, `dark:border-transparent`.
+- **Chat history**: Checkboxes use `dark:border-n-3` for visibility; secondary text uses `dark:text-n-3`.
+
 ## Conventions
 
 - prefer path aliases (`@/...`) over long relative imports

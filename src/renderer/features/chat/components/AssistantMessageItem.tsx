@@ -3,6 +3,7 @@ import {
   ChainOfThoughtContent,
 } from "@/components/ai-elements/chain-of-thought";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
+import { getToolDefinition, getToolDisplay } from "@/tools";
 import { Icon } from "@/utils/icons";
 import { getTextFromParts, getToolPartName } from "../utils/messageParts";
 import { ToolStepItem } from "./ToolStepItem";
@@ -33,15 +34,24 @@ export function AssistantMessageItem({
   isStopped,
 }: AssistantMessageItemProps) {
   const text = getTextFromParts(message.parts);
-  const chainSteps = message.parts.map((part, index) => (
-    <ToolStepItem
-      key={getStepKey(part, message.id, index)}
-      part={part}
-      messageId={message.id}
-      partIndex={index}
-      addToolApprovalResponse={addToolApprovalResponse}
-    />
-  ));
+  const chainSteps = message.parts.map((part, index) => {
+    const isToolPart =
+      part.type === "dynamic-tool" || part.type.startsWith("tool-");
+    const toolName = isToolPart ? getToolPartName(part) : "";
+    const toolDef = isToolPart ? getToolDefinition(toolName) : undefined;
+    const ToolDisplay = isToolPart ? getToolDisplay(toolName) : undefined;
+    return (
+      <ToolStepItem
+        key={getStepKey(part, message.id, index)}
+        part={part}
+        messageId={message.id}
+        partIndex={index}
+        addToolApprovalResponse={addToolApprovalResponse}
+        toolDef={toolDef}
+        ToolDisplay={ToolDisplay}
+      />
+    );
+  });
   const hasChain = message.parts.some(
     (part) =>
       (part.type === "reasoning" && part.text.trim()) ||

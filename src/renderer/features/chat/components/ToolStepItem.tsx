@@ -3,18 +3,21 @@ import { streamdownPlugins } from "@/components/ai-elements/message";
 import { Streamdown } from "streamdown";
 import { TruncatedOutput } from "@/utils/truncated-output";
 import { ToolOutput } from "@/components/ai-elements/tool";
-import { getToolDefinition, getToolDisplay } from "@/tools";
 import { getToolPartName, getToolStepStatus } from "../utils/messageParts";
 import { ToolApprovalRequest } from "./ToolApprovalRequest";
 import type { ToolApprovalResponseParams } from "../hooks/useChatPageController";
+import type { ToolDefinition, ToolDisplayProps } from "@/tools";
 import type { UIMessage } from "ai";
 import { BrainIcon } from "lucide-react";
+import type { ComponentType } from "react";
 
 type ToolStepItemProps = {
   part: UIMessage["parts"][number];
   messageId: string;
   partIndex: number;
   addToolApprovalResponse: (params: ToolApprovalResponseParams) => void;
+  toolDef?: ToolDefinition | null;
+  ToolDisplay?: ComponentType<ToolDisplayProps> | null;
 };
 
 export function ToolStepItem({
@@ -22,6 +25,8 @@ export function ToolStepItem({
   messageId,
   partIndex,
   addToolApprovalResponse,
+  toolDef,
+  ToolDisplay: ToolDisplayComponent,
 }: ToolStepItemProps) {
   if (part.type === "reasoning") {
     if (!part.text.trim()) {
@@ -49,7 +54,7 @@ export function ToolStepItem({
   }
 
   const toolName = getToolPartName(part);
-  const def = getToolDefinition(toolName);
+  const def = toolDef ?? null;
   const input = "input" in part ? part.input : {};
   const output = "output" in part ? part.output : undefined;
   const errorText = "errorText" in part ? part.errorText : undefined;
@@ -78,10 +83,9 @@ export function ToolStepItem({
         />
       ) : output !== undefined || errorText ? (
         (() => {
-          const ToolDisplay = getToolDisplay(toolName);
-          if (ToolDisplay) {
+          if (ToolDisplayComponent) {
             return (
-              <ToolDisplay
+              <ToolDisplayComponent
                 toolName={toolName}
                 input={input}
                 output={output}
