@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { enablePageScroll, clearQueueScrollLocks } from "scroll-lock";
 import { useMediaQuery } from "react-responsive";
@@ -10,6 +10,8 @@ type LayoutProps = {
     smallSidebar?: boolean;
     hideRightSidebar?: boolean;
     onToggleRightSidebar?: () => void;
+    /** When this value changes to non-empty, open right sidebar once (compact view). */
+    openRightSidebarTrigger?: string;
     backUrl?: string;
     children: React.ReactNode;
 };
@@ -18,6 +20,7 @@ const Layout = ({
     smallSidebar = false,
     hideRightSidebar = false,
     onToggleRightSidebar,
+    openRightSidebarTrigger,
     backUrl,
     children,
 }: LayoutProps) => {
@@ -38,6 +41,20 @@ const Layout = ({
             setVisibleRightSidebar(false);
         }
     }, [isCompactRightSidebar]);
+
+    const prevOpenTriggerRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (
+            openRightSidebarTrigger &&
+            isCompactRightSidebar &&
+            prevOpenTriggerRef.current !== openRightSidebarTrigger
+        ) {
+            prevOpenTriggerRef.current = openRightSidebarTrigger;
+            setVisibleRightSidebar(true);
+        } else if (!openRightSidebarTrigger) {
+            prevOpenTriggerRef.current = null;
+        }
+    }, [openRightSidebarTrigger, isCompactRightSidebar]);
 
     const handleClickOverlay = () => {
         setVisibleSidebar(false);
@@ -121,7 +138,11 @@ const Layout = ({
                                     "md:translate-x-64 md:before:absolute md:before:z-30 md:before:inset-0"
                                 }
                             `}
-                                visible={visibleRightSidebar}
+                                visible={
+                                    isCompactRightSidebar
+                                        ? visibleRightSidebar
+                                        : !hideRightSidebar
+                                }
                             />
                         )}
                     </div>
