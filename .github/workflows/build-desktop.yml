@@ -44,6 +44,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          # macOS: Developer ID Application (base64 .p12)
+          CSC_LINK: ${{ matrix.os == 'macos-latest' && secrets.MACOS_CERTIFICATE_BASE64 || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.os == 'macos-latest' && secrets.MACOS_CERTIFICATE_PASSWORD || '' }}
+          # macOS notarization (optional; add secrets to enable)
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: npm run dist -- ${{ matrix.dist_args }}
 
       - name: Upload dist artifacts
