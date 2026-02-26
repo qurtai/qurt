@@ -4,7 +4,11 @@
   "private": true,
   "main": "dist-electron/main.js",
   "build": {
-    "files": ["dist", "dist-electron", "package.json"]
+    "files": ["dist", "dist-electron", "package.json"],
+    "icon": "build/icon.png",
+    "win": {
+      "icon": "build/icon.png"
+    }
   },
   "scripts": {
     "dev": "vite",

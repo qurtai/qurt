@@ -21,6 +21,11 @@ Reliability posture and hardening plan for `alem`.
 - browser control tool: one window per active chat; switching chats closes the previous window; http/https only; actions (navigate, click_at, type, press, scroll, wait, screenshot, close) use screenshots; input actions focus the browser window before dispatch and scroll targets the last pointer position (or viewport center fallback); screenshots are normalized to viewport dimensions for coordinate consistency; per-run approval required by default; scoped auto-approval (allow once, allow this tool for this chat, allow all tools for this chat, allow this website globally) reduces prompts when user has opted in; prepareStep prunes old screenshots from AI request context (keeps only the last one) to avoid token overflow
 - memory tool: files stored under app userData (`.memory/`); bootstrap on startup; path allowlist restricts operations to core.md, notes.md, conversations.jsonl; append failures do not block chat flow; conversation logging is best-effort
 
+## Known Bugs and Limitations
+
+- **Images from tools on OpenAI-compatible APIs**: When a model uses an OpenAI-compatible chat completion API, sending images from tools (e.g. screenshots, search results) does not work correctly. Base64 image data is serialized into JSON, which quickly exhausts the model's context window. Image understanding still works when the payload fits, but runs with many tool-returned images often hit context limits and fail.
+- **Provider-executed tools unsupported**: The AI SDK does not support defining provider-native tools (e.g. Kimi K2.5's built-in web search). Such tools cannot be used until the SDK adds support for provider-executed tools.
+
 ## Known Gaps
 
 - no automated end-to-end regression suite yet
